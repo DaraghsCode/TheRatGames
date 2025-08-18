@@ -10,6 +10,8 @@ let request_id;
 document.addEventListener("DOMContentLoaded", init, false);
 let level = 1;
 let map;
+let tileImage= new Image();
+tileImage.src="WallTileNormal.png";
 let timerInterval=null;
 let timerStopped = false;
 let player = {
@@ -299,7 +301,8 @@ function drawLevel(number) {
     for (let r = 0; r < map.rows; r++) {
       let tile = map.getTile(c, r);
       if (tile === 1) {
-        context.fillRect(
+          context.drawImage(
+          tileImage,
           c * map.tsize,  // x
           r * map.tsize,  // y
           map.tsize,      // width
