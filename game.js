@@ -24,7 +24,7 @@ let player = {
 };
 let enemies = [];
 let enemyImage = new Image();
-enemyImage.src = "mouse.png";
+enemyImage.src = "ratEnemy.png";
 let exit = {
   x: 448, //512-64
   y: 0,
@@ -149,6 +149,9 @@ function draw() {
 
   checkCollisions();
 }
+
+
+
 function gameOver() {
   recordTime();
   cancelAnimationFrame(request_id);
@@ -196,10 +199,10 @@ function drawLevel(number) {
       tiles: [
         1, 1, 1, 1, 1, 1, 0, 0,
         1, 0, 0, 0, 0, 0, 0, 1,
-        1, 0, 1, 1, 1, 1, 1, 1,
-        1, 0, 1, 1, 1, 1, 1, 1,
-        1, 0, 1, 1, 1, 1, 1, 1,
-        1, 0, 1, 1, 1, 1, 1, 1,
+        1, 0, 1, 0, 1, 1, 0, 1,
+        1, 0, 1, 0, 1, 1, 0, 1,
+        1, 0, 1, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 1, 1, 1, 1,
         1, 0, 1, 1, 1, 1, 1, 1,
         0, 0, 1, 1, 1, 1, 1, 1
       ],
@@ -324,6 +327,7 @@ function checkCollisions() {
     level += 1;
     document.getElementById("level").innerHTML = 'Level: ' + level;
     positionPlayerBottomLeft();
+    spawnEnemies(3);
   }
 
   // wall collisions
@@ -438,5 +442,4 @@ function resetGame() {
   level = 1;
   spawnEnemies(3);
 }
-
 
