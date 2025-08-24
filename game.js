@@ -7,7 +7,7 @@ let fpsInterval = 1000 / 30;
 let now;
 let then = Date.now();
 let request_id;
-document.addEventListener("DOMContentLoaded", init, false);
+document.addEventListener("DOMContentLoaded", startMenu, false);
 let level = 1;
 let map;
 let tileImage= new Image();
@@ -37,6 +37,15 @@ let moveLeft = false;
 let moveUp = false;
 let moveDown = false;
 let moveRight = false;
+
+function startMenu() {
+  context.font= "bold 20px Arial";
+  context.fillStyle = "black";
+  context.textAlign = "center";
+  context.fillText("Click anywhere to start",canvas.width/2, canvas.height/2);
+  document.addEventListener('click',init, {once: true})
+}
+
 
 function init() {
   window.addEventListener("keydown", activate, false);
