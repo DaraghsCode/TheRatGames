@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", startMenu, false);
 let level = 1;
 let map;
 let tileImage= new Image();
+let playerImage=new Image();
+playerImage.src='cheese.png';
 tileImage.src="WallTileNormal.png";
 let timerInterval=null;
 let timerStopped = false;
@@ -118,7 +120,7 @@ function draw() {
   }
   //Draw player
   context.fillStyle = "yellow"
-  context.fillRect(player.x, player.y, player.size, player.size);
+  context.drawImage(playerImage,player.x, player.y, player.size, player.size);
   context.fillStyle = "red"
 
   //player movement
@@ -229,8 +231,8 @@ function drawLevel(number) {
       tiles: [
         1, 1, 1, 1, 1, 1, 0, 0,
         1, 0, 0, 0, 0, 0, 0, 1,
-        1, 0, 1, 1, 1, 1, 1, 1,
-        1, 0, 1, 1, 1, 1, 1, 1,
+        1, 0, 1, 1, 1, 1, 0, 1,
+        1, 0, 1, 1, 1, 1, 0, 1,
         1, 0, 0, 0, 0, 0, 0, 1,
         1, 1, 1, 1, 1, 1, 0, 1,
         1, 0, 0, 0, 0, 0, 0, 1,
@@ -249,8 +251,8 @@ function drawLevel(number) {
       tsize: 64,
       tiles: [
         1, 1, 1, 1, 1, 0, 0, 0,
-        1, 0, 0, 0, 1, 0, 1, 1,
-        1, 0, 1, 0, 1, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 1, 1,
+        1, 0, 1, 0, 0, 0, 0, 1,
         1, 0, 1, 0, 0, 0, 1, 1,
         1, 0, 1, 1, 1, 0, 0, 1,
         1, 0, 0, 0, 1, 1, 0, 1,
@@ -271,7 +273,7 @@ function drawLevel(number) {
       tiles: [
         1, 1, 1, 1, 1, 1, 0, 0,
         1, 0, 0, 1, 0, 0, 0, 1,
-        1, 0, 1, 1, 0, 1, 0, 1,
+        1, 0, 0, 1, 0, 1, 0, 1,
         1, 0, 0, 0, 0, 1, 0, 1,
         1, 1, 0, 1, 1, 1, 0, 1,
         1, 0, 0, 0, 0, 0, 0, 1,

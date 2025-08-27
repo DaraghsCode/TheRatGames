@@ -1,6 +1,6 @@
 canvas{
-    width: 80%;
-    height: 80%;
+    width: auto;
+    height: 60vh;
     border-style: solid;
     border-color: black 10px;
 }
