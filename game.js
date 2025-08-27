@@ -1,13 +1,87 @@
 let canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
 context.fillStyle = "red";
-
+let currentGame;
 
 let fpsInterval = 1000 / 30;
 let now;
 let then = Date.now();
 let request_id;
+document.querySelector('#gameList').addEventListener('click', ratShooterIII, false);
 document.addEventListener("DOMContentLoaded", startMenu, false);
+
+function startMenu() {
+  context.font= "bold 20px Arial";
+  context.fillStyle = "black";
+  context.textAlign = "center";
+  context.fillText("Click anywhere to start",canvas.width/2, canvas.height/2);
+  canvas.addEventListener('click',ratRaceII, {once: true});
+  
+}
+
+function ratShooterIII(){
+  currentGame='shooterGame';
+   if (currentGame=='mazeGame'){
+    return;
+  }
+  canvas.removeEventListener('click',ratRaceII);
+  console.log('you have selected our other game!')
+  let player={
+    x : canvas.height/2,
+    y : canvas.width/2,
+    size: 50,
+    xChange: 10,
+    yChange: 10,
+    color: "yellow"
+  }
+  init()
+  
+  function init(){
+    window.addEventListener("keydown", activate, false);
+    window.addEventListener("keyup", deactivate, false);
+    
+    draw()
+  }
+
+  function activate() {
+    //todo
+  }
+
+  function deactivate(){
+    //todo
+  }
+
+
+  function draw(){
+    now = Date.now();
+    request_id = requestAnimationFrame(draw);
+
+  
+    context.fillStyle="red";
+    context.fillRect(0,0,canvas.width,canvas.height);
+    
+    
+    //draw player(yellow brick for now)
+    context.fillStyle=player.color;
+    context.fillRect(player.x,player.y,player.size,player.size);
+
+
+
+    //i think this helps the screen refresh but we'll have to see
+    context.clearRect(0,0,canvas.size,canvas.size);
+
+  }
+
+
+}
+
+//RatRaceII
+function ratRaceII(){
+  currentGame='mazeGame';
+  if (currentGame=='shooterGame'){
+    return;
+  }
+  console.log('you have succesfully started RatRaceII')
 let level = 1;
 let map;
 let tileImage= new Image();
@@ -40,14 +114,6 @@ let moveUp = false;
 let moveDown = false;
 let moveRight = false;
 
-function startMenu() {
-  context.font= "bold 20px Arial";
-  context.fillStyle = "black";
-  context.textAlign = "center";
-  context.fillText("Click anywhere to start",canvas.width/2, canvas.height/2);
-  document.addEventListener('click',init, {once: true});
-}
-
 
 function init() {
   console.log('init function has been called!');
@@ -61,7 +127,7 @@ function init() {
   displayPlayerTime()
   startTimer()
 }
-
+init();
 var startTime;
 var endTime;
 var timeDiff;
@@ -176,7 +242,7 @@ function gameOver() {
   context.fillText("Your Time: " + timeDiff + ' seconds', canvas.width / 2, canvas.height / 2 + 100);
   context.font = "bold 15px Arial";
   context.fillText("Click anywhere to start again", canvas.width / 2, canvas.height / 2 + 200);
-  document.addEventListener("click", init, {once:true});
+  canvas.addEventListener("click", init, {once:true});
   timerStopped = true;
   if (timerInterval){
     clearInterval(timerInterval);
@@ -194,8 +260,8 @@ function endGame() {
   context.font = "bold 30px Arial";
   context.fillText("You finished all levels in " + timeDiff + " seconds!", canvas.width / 2, canvas.height / 2 + 100);
   context.font = "bold 15px Arial";
-  context.fillText("Click anywhere to play again", canvas.width / 2, canvas.height / 2 + 200);
-  document.addEventListener("click", init, { once: true });
+  context.fillText("Click the canvas to play again", canvas.width / 2, canvas.height / 2 + 200);
+  canvas.addEventListener("click", init, { once: true });
   if (timerInterval){
     clearInterval(timerInterval);
   };
@@ -400,9 +466,9 @@ function spawnEnemies(num) {
   //creates a safe zone in the bottom left that enemies wont spawn in using isSafe (see below) 
   let safeZone = {
     x: 0,
-    y: canvas.height - 100,
-    width: 100,
-    height: 100
+    y: canvas.height - 200,
+    width: 200,
+    height: 200
   };
 
 
@@ -440,7 +506,7 @@ function spawnEnemies(num) {
       x: ex,
       y: ey,
       size: 40,
-      speed: 1 + level * 0.2, // Enemies get faster each level
+      speed: 1, //add if you want faster enemies + level * 0.2,
       img: enemyImage
     });
   }
@@ -454,4 +520,4 @@ function resetGame() {
   level = 1;
   spawnEnemies(3);
 }
-
+}

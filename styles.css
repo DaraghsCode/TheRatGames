@@ -4,3 +4,6 @@ canvas{
     border-style: solid;
     border-color: black 10px;
 }
+li{
+    list-style-type: none;
+}
