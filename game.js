@@ -45,11 +45,12 @@ function startMenu() {
   context.fillStyle = "black";
   context.textAlign = "center";
   context.fillText("Click anywhere to start",canvas.width/2, canvas.height/2);
-  document.addEventListener('click',init, {once: true})
+  document.addEventListener('click',init, {once: true});
 }
 
 
 function init() {
+  console.log('init function has been called!');
   window.addEventListener("keydown", activate, false);
   window.addEventListener("keyup", deactivate, false);
   positionPlayerBottomLeft();
@@ -60,6 +61,7 @@ function init() {
   displayPlayerTime()
   startTimer()
 }
+
 var startTime;
 var endTime;
 var timeDiff;
@@ -174,7 +176,7 @@ function gameOver() {
   context.fillText("Your Time: " + timeDiff + ' seconds', canvas.width / 2, canvas.height / 2 + 100);
   context.font = "bold 15px Arial";
   context.fillText("Click anywhere to start again", canvas.width / 2, canvas.height / 2 + 200);
-  document.addEventListener("click", init);
+  document.addEventListener("click", init, {once:true});
   timerStopped = true;
   if (timerInterval){
     clearInterval(timerInterval);
@@ -193,7 +195,6 @@ function endGame() {
   context.fillText("You finished all levels in " + timeDiff + " seconds!", canvas.width / 2, canvas.height / 2 + 100);
   context.font = "bold 15px Arial";
   context.fillText("Click anywhere to play again", canvas.width / 2, canvas.height / 2 + 200);
-  document.removeEventListener("click", init);
   document.addEventListener("click", init, { once: true });
   if (timerInterval){
     clearInterval(timerInterval);
