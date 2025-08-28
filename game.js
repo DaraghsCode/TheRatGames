@@ -43,12 +43,45 @@ function ratShooterIII(){
     draw()
   }
 
-  function activate() {
-    //todo
+  let moveUp=true;
+  let moveDown=true;
+  let moveRight=true;
+  let moveLeft=true;
+  function activate(event) {
+    //respond to arrow presses and change player coordinates accordingly
+    const key=event.key; //store key press in key variable
+    event.preventDefault();
+    if (moveRight && key === 'ArrowRight' && player.x+player.size < canvas.width){
+      player.x=player.x+player.xChange;
+    }
+    else if (moveLeft && key === 'ArrowLeft' && player.x > canvas.width-canvas.width){
+      player.x=player.x-player.xChange;
+    }
+    else if(moveDown && key === 'ArrowDown' && player.y+player.size < canvas.height){
+      player.y=player.y+player.yChange;
+    }
+    else if (moveUp && key === 'ArrowUp' && player.y > canvas.height-canvas.height){
+      player.y=player.y-player.yChange;
+    }
+
   }
 
   function deactivate(){
     //todo
+  }
+
+  function checkCollisions(){
+    // check for collision with canvas
+
+    // if right of player is touching right side of canvas
+    if ((player.x+player.size) === (canvas.x+canvas.size)){
+      moveRight=false;
+      //disable player from moving right
+    }
+
+    // if left of player is touching left of canvas
+
+
   }
 
 
@@ -56,7 +89,7 @@ function ratShooterIII(){
     now = Date.now();
     request_id = requestAnimationFrame(draw);
 
-  
+    
     context.fillStyle="red";
     context.fillRect(0,0,canvas.width,canvas.height);
     
@@ -72,6 +105,10 @@ function ratShooterIII(){
 
   }
 
+  function endGame(){
+     window.cancelAnimationFrame(draw);
+  }
+checkCollisions();
 
 }
 
