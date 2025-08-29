@@ -15,15 +15,20 @@ function startMenu() {
   context.fillStyle = "black";
   context.textAlign = "center";
   context.fillText("Click anywhere to start",canvas.width/2, canvas.height/2);
+  if (currentGame == 'mazeGame' || currentGame == null){
   canvas.addEventListener('click',ratRaceII, {once: true});
-  
+  }
+  else{
+    canvas.removeEventListener('click',ratRaceII, {once: true});
+  }
 }
 
 function ratShooterIII(){
-  currentGame='shooterGame';
    if (currentGame=='mazeGame'){
     return;
   }
+  currentGame='shooterGame';
+  console.log(currentGame);
   canvas.removeEventListener('click',ratRaceII);
   console.log('you have selected our other game!')
   let player={
@@ -47,6 +52,8 @@ function ratShooterIII(){
   let moveDown=true;
   let moveRight=true;
   let moveLeft=true;
+
+
   function activate(event) {
     //respond to arrow presses and change player coordinates accordingly
     const key=event.key; //store key press in key variable
@@ -70,26 +77,10 @@ function ratShooterIII(){
     //todo
   }
 
-  function checkCollisions(){
-    // check for collision with canvas
-
-    // if right of player is touching right side of canvas
-    if ((player.x+player.size) === (canvas.x+canvas.size)){
-      moveRight=false;
-      //disable player from moving right
-    }
-
-    // if left of player is touching left of canvas
-
-
-  }
-
 
   function draw(){
     now = Date.now();
-    request_id = requestAnimationFrame(draw);
-
-    
+    request_id = requestAnimationFrame(draw);  
     context.fillStyle="red";
     context.fillRect(0,0,canvas.width,canvas.height);
     
@@ -105,17 +96,13 @@ function ratShooterIII(){
 
   }
 
-  function endGame(){
-     window.cancelAnimationFrame(draw);
-  }
-checkCollisions();
 
 }
 
 //RatRaceII
 function ratRaceII(){
-  currentGame='mazeGame';
-  if (currentGame=='shooterGame'){
+  console.log(currentGame);
+  if (currentGame === 'shooterGame'){
     return;
   }
   console.log('you have succesfully started RatRaceII')
