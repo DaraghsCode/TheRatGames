@@ -15,22 +15,19 @@ function startMenu() {
   context.fillStyle = "black";
   context.textAlign = "center";
   context.fillText("Click anywhere to start",canvas.width/2, canvas.height/2);
-  if (currentGame == 'mazeGame' || currentGame == null){
   canvas.addEventListener('click',ratRaceII, {once: true});
-  }
-  else{
-    canvas.removeEventListener('click',ratRaceII, {once: true});
-  }
+
 }
 
 function ratShooterIII(){
    if (currentGame=='mazeGame'){
     return;
   }
+  canvas.removeEventListener('click',ratRaceII, {once: true});
   currentGame='shooterGame';
-  console.log(currentGame);
   canvas.removeEventListener('click',ratRaceII);
   console.log('you have selected our other game!')
+  document.getElementById('playerTime').innerHTML="";
   let player={
     x : canvas.height/2,
     y : canvas.width/2,
@@ -102,7 +99,8 @@ function ratShooterIII(){
 //RatRaceII
 function ratRaceII(){
   console.log(currentGame);
-  if (currentGame === 'shooterGame'){
+  if (currentGame == 'shooterGame'){
+    console.log('RatRaceII called but RatRaceShooter is running')
     return;
   }
   console.log('you have succesfully started RatRaceII')
@@ -266,7 +264,7 @@ function gameOver() {
   context.fillText("Your Time: " + timeDiff + ' seconds', canvas.width / 2, canvas.height / 2 + 100);
   context.font = "bold 15px Arial";
   context.fillText("Click anywhere to start again", canvas.width / 2, canvas.height / 2 + 200);
-  canvas.addEventListener("click", init, {once:true});
+  canvas.addEventListener("click", ratRaceII, {once:true});
   timerStopped = true;
   if (timerInterval){
     clearInterval(timerInterval);
