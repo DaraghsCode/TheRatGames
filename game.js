@@ -84,19 +84,14 @@ function ratShooterIII() {
 
   function spawnEnemies(num) {
     //spawn number of enemies enemies must come from outside the screen and move towards player.
-    //need enemies to spawn off screen
-
-
-    console.log(canvas.height);
-    console.log(canvas.x);
-    console.log(canvas.y);
-    
     for (let i = 0; i < num; i++) {
       let margin = 20;
+      //generate random x and y coordinate between -20 and 532 (532= 512 +40 -20)
       let randxCoordinate = (Math.floor((Math.random() * (canvas.height + margin * 2)))) - margin;
       let randyCoordinate = (Math.floor((Math.random() * (canvas.height + margin * 2)))) - margin;
 
       let whithinbounds = true;
+      //if coordinates are whithin the canvas bounds, generate new coords
       while (whithinbounds) {
         if (randxCoordinate > 0 &&
           randxCoordinate + enemy.size < 0 + canvas.height &&
@@ -106,22 +101,40 @@ function ratShooterIII() {
             randxCoordinate = (Math.floor((Math.random() * (canvas.height + margin * 2)))) - margin;
             randyCoordinate = (Math.floor((Math.random() * (canvas.height + margin * 2)))) - margin;
         }
+        //if coords are outside the canvas - exit loop and push to enemies list
         else{
           whithinbounds = false;
         }
       }
-      /*
-       let randxCoordinate = Math.floor((Math.random() * canvas.height));
-       let randyCoordinate = Math.floor((Math.random() * canvas.height));
-       */
-      console.log('enemy number ' + i + " has spawned" + ' at coordinates ' + randxCoordinate + ',' + randyCoordinate);
+     // console.log('enemy number ' + i + " has spawned" + ' at coordinates ' + randxCoordinate + ',' + randyCoordinate);
       enemies.push([randxCoordinate, randyCoordinate, enemy.size, enemy.size])
     }
-    console.log(enemies);
+    //console.log(enemies);
 
   }
   spawnEnemies(4);
 
+ function moveEnemiesTowardsPlayer(){
+  // a function that updates the coords of enemies
+  for (let i=0; i < enemies.length; i++){
+    //for every enemy
+    let enemyXcoords= enemies[i][0];
+    let enemyYcoords=enemies[i][1];
+    console.log('enemy'+ i+'s original coordinates are: '+ enemies[i][0] +','+ enemies[i][1]);
+    
+    //find distance between enemy and player
+    let distance=Math.sqrt( ((player.x-enemyXcoords) ** 2) + ((player.y-enemyYcoords) ** 2))
+
+    //normalize direction towards player (give appropriate x and y change)
+    let newEnemyX= enemyXcoords/distance;
+    let newEnemyY= enemyYcoords/distance;
+
+    enemies[i][0]=enemyXcoords + (newEnemyX*enemy.xChange);
+    enemies[i][1]=enemyYcoords + (newEnemyY*enemy.yChange);
+    console.log('new coords: '+ enemies[i][0] +','+ enemies[i][1]);
+  }
+ } 
+ //moveEnemiesTowardsPlayer();
 
   function draw() {
     now = Date.now();
@@ -140,7 +153,7 @@ function ratShooterIII() {
       context.fillRect(enemies[i][0], enemies[i][1], enemies[i][2], enemies[i][3]);
       //console.log(enemies[i][0]);
     }
-
+    moveEnemiesTowardsPlayer();
     //i think this helps the screen refresh but we'll have to see
     context.clearRect(0, 0, canvas.size, canvas.size);
 
