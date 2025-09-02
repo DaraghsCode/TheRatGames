@@ -23,6 +23,7 @@ function ratShooterIII() {
   if (currentGame == 'mazeGame') {
     return;
   }
+  let request_id;
   canvas.removeEventListener('click', ratRaceII, { once: true });
   currentGame = 'shooterGame';
   canvas.removeEventListener('click', ratRaceII);
@@ -116,25 +117,46 @@ function ratShooterIII() {
 
  function moveEnemiesTowardsPlayer(){
   // a function that updates the coords of enemies
+  console.log('enemies have moved towards player!')
+  console.log('player coords are' + (player.x+player.size/2) + ',' + (player.x+player.size/2))
   for (let i=0; i < enemies.length; i++){
+    //center of player
+    let centerOfPlayerX=player.x+player.size/2;
+    let centerOfPlayerY=player.y+player.size/2;
     //for every enemy
-    let enemyXcoords= enemies[i][0];
+    let enemyXcoords=enemies[i][0];
     let enemyYcoords=enemies[i][1];
-    console.log('enemy'+ i+'s original coordinates are: '+ enemies[i][0] +','+ enemies[i][1]);
-    
+    //let centerOfEnemyX=enemyXcoords+enemy.size/2;
+    //let centerOfEnemyY=enemyYcoords+enemy.size/2;
+    console.log('enemy'+ i+'s coords are: '+ enemies[i][0] +','+ enemies[i][1]);
     //find distance between enemy and player
-    let distance=Math.sqrt( ((player.x-enemyXcoords) ** 2) + ((player.y-enemyYcoords) ** 2))
+    let distance=Math.sqrt( ((centerOfPlayerX-enemyXcoords) ** 2) + ((centerOfPlayerY-enemyYcoords) ** 2))
+    console.log('distance between enemy ' + i + ' and player is ' + distance)
 
     //normalize direction towards player (give appropriate x and y change)
     let newEnemyX= enemyXcoords/distance;
     let newEnemyY= enemyYcoords/distance;
+    
+    if (enemyXcoords<player.x && enemyXcoords>0){
+      newEnemyX=newEnemyX*-1;
+    }
+    else if (enemyXcoords<player.x && enemyXcoords<0){
+      newEnemyX=newEnemyX+5;
+    }
+    if (enemyYcoords<player.y && enemyYcoords>0){
+      newEnemyY=newEnemyY*-1;
+    }
+    else if (enemyYcoords<player.y && enemyYcoords<0){
+      newEnemyY=newEnemyY-5;
+    }
+    enemies[i][0]= enemyXcoords - newEnemyX;
+    enemies[i][1]=enemyYcoords - newEnemyY;
 
-    enemies[i][0]=enemyXcoords + (newEnemyX*enemy.xChange);
-    enemies[i][1]=enemyYcoords + (newEnemyY*enemy.yChange);
     console.log('new coords: '+ enemies[i][0] +','+ enemies[i][1]);
   }
  } 
- //moveEnemiesTowardsPlayer();
+//moveEnemiesTowardsPlayer();
+document.getElementById('makeEnemiesMove').addEventListener('click',moveEnemiesTowardsPlayer,false);
 
   function draw() {
     now = Date.now();
@@ -158,6 +180,12 @@ function ratShooterIII() {
     context.clearRect(0, 0, canvas.size, canvas.size);
 
   }
+  function pauseGame(){
+    cancelAnimationFrame(request_id);
+    console.log('game paused');
+  };
+
+  document.getElementById('pause').addEventListener('click',pauseGame,false);
 }
 
 //RatRaceII
