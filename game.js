@@ -64,17 +64,22 @@ function ratShooterIII() {
 
   function activate(event) {
     const key = event.key;
-    event.preventDefault();
+    if (key === 'ArrowRight' ||
+        key === 'ArrowLeft' ||
+        key === 'ArrowDown' ||
+        key === 'ArrowUp'){
+          event.preventDefault();
+        }
     if (moveRight && key === 'ArrowRight' && player.x + player.size < canvas.width) {
       player.x = player.x + player.xChange;
     }
-    else if (moveLeft && key === 'ArrowLeft' && player.x > canvas.width - canvas.width) {
+    if (moveLeft && key === 'ArrowLeft' && player.x > canvas.width - canvas.width) {
       player.x = player.x - player.xChange;
     }
-    else if (moveDown && key === 'ArrowDown' && player.y + player.size < canvas.height) {
+    if (moveDown && key === 'ArrowDown' && player.y + player.size < canvas.height) {
       player.y = player.y + player.yChange;
     }
-    else if (moveUp && key === 'ArrowUp' && player.y > canvas.height - canvas.height) {
+    if (moveUp && key === 'ArrowUp' && player.y > canvas.height - canvas.height) {
       player.y = player.y - player.yChange;
     }
 
@@ -118,8 +123,6 @@ function ratShooterIII() {
 
  function moveEnemiesTowardsPlayer(){
   // a function that updates the coords of enemies
-  console.log('enemies have moved towards player!')
-  console.log('player coords are' + (player.x+player.size/2) + ',' + (player.x+player.size/2))
   for (let i=0; i < enemies.length; i++){
     let centerOfPlayerX=player.x+player.size/2;
     let centerOfPlayerY=player.y+player.size/2;
@@ -149,7 +152,7 @@ function ratShooterIII() {
   }
  } 
 //moveEnemiesTowardsPlayer();
-document.getElementById('makeEnemiesMove').addEventListener('click',moveEnemiesTowardsPlayer,false);
+//document.getElementById('makeEnemiesMove').addEventListener('click',moveEnemiesTowardsPlayer,false);
 
   function draw() {
     now = Date.now();
