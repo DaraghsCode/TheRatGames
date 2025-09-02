@@ -20,21 +20,18 @@ function startMenu() {
 }
 
 function ratShooterIII() {
+
+
+  //stops running rat race
   if (currentGame == 'mazeGame') {
     return;
   }
+
+  //initialising global variables
   let fpsInterval=1000/30;
   let now;
   let then = Date.now();
-
-
   let request_id;
-  canvas.removeEventListener('click', ratRaceII, { once: true });
-  currentGame = 'shooterGame';
-  canvas.removeEventListener('click', ratRaceII);
-  console.log('you have selected our other game!')
-  document.getElementById('playerTime').innerHTML = "";
-  let randCoordinate;
   let player = {
     x: canvas.height / 2,
     y: canvas.width / 2,
@@ -43,11 +40,7 @@ function ratShooterIII() {
     yChange: 2,
     color: "yellow"
   }
-  let moveUp =false;
-  let moveDown = false;
-  let moveRight = false;
-  let moveLeft = false;
-  let enemy = {
+   let enemy = {
     x: 0,
     y: 0,
     size: 10,
@@ -57,12 +50,28 @@ function ratShooterIII() {
     color: 'blue'
   }
   let enemies = [];
+  let moveUp =false;
+  let moveDown = false;
+  let moveRight = false;
+  let moveLeft = false;
+  
   init()
+
+
+
+
 
   function init() {
     window.addEventListener("keydown", activate, false);
     window.addEventListener("keyup", deactivate, false);
     draw()
+    spawnEnemies(4);
+
+  //clear  rat race 2 bits from html
+  canvas.removeEventListener('click', ratRaceII, { once: true });
+  currentGame = 'shooterGame';
+  canvas.removeEventListener('click', ratRaceII);
+  document.getElementById('playerTime').innerHTML = "";
   }
 
 
@@ -125,7 +134,6 @@ function ratShooterIII() {
     //console.log(enemies);
 
   }
-  spawnEnemies(4);
 
  function moveEnemiesTowardsPlayer(){
   // a function that updates the coords of enemies
@@ -157,8 +165,6 @@ function ratShooterIII() {
     //console.log('new coords: '+ enemies[i][0] +','+ enemies[i][1]);
   }
  } 
-//moveEnemiesTowardsPlayer();
-//document.getElementById('makeEnemiesMove').addEventListener('click',moveEnemiesTowardsPlayer,false);
 
   function draw() {
     request_id = requestAnimationFrame(draw);
@@ -213,9 +219,13 @@ function ratShooterIII() {
     cancelAnimationFrame(request_id);
     console.log('game paused');
   };
-
-  document.getElementById('pause').addEventListener('click',pauseGame,false);
 }
+
+
+
+
+
+
 //RatRaceII
 function ratRaceII() {
   console.log(currentGame);
