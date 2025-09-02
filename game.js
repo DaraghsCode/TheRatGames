@@ -40,6 +40,8 @@ function ratShooterIII() {
     yChange: 2,
     color: "yellow"
   }
+  let centerOfPlayerX=player.x+player.size/2;
+  let centerOfPlayerY=player.y+player.size/2;
    let enemy = {
     x: 0,
     y: 0,
@@ -49,11 +51,19 @@ function ratShooterIII() {
     yChange: 10,
     color: 'blue'
   }
+  let bullet = {
+    size: 5,
+    xChange: 5,
+    yChange: 5,
+    color: 'green'
+  }
+  let bullets =[];
   let enemies = [];
   let moveUp =false;
   let moveDown = false;
   let moveRight = false;
   let moveLeft = false;
+  let spaceBarPressed = false;
   
   init()
 
@@ -74,26 +84,29 @@ function ratShooterIII() {
   document.getElementById('playerTime').innerHTML = "";
   }
 
-
   function activate(event) {
     const key = event.key;
     if (key === 'ArrowRight' ||
         key === 'ArrowLeft' ||
         key === 'ArrowDown' ||
-        key === 'ArrowUp'){
+        key === 'ArrowUp' ||
+        key === ' '){
           event.preventDefault();
         }
     if (key === 'ArrowRight' ){
       moveRight=true;
     }
-    else if (key === 'ArrowLeft' ){
+    if (key === 'ArrowLeft' ){
       moveLeft=true;
     }
-    else if (key === 'ArrowUp' ){
+    if (key === 'ArrowUp' ){
       moveUp=true;
     }
-    else if (key === 'ArrowDown' ){
+    if (key === 'ArrowDown' ){
       moveDown=true;
+    }
+    if (key === ' '){
+      spaceBarPressed = true;
     }
   }
 
@@ -102,6 +115,7 @@ function ratShooterIII() {
   moveDown = false;
   moveRight = false;
   moveLeft = false;
+  spaceBarPressed = false;
   }
 
   function spawnEnemies(num) {
@@ -138,8 +152,6 @@ function ratShooterIII() {
  function moveEnemiesTowardsPlayer(){
   // a function that updates the coords of enemies
   for (let i=0; i < enemies.length; i++){
-    let centerOfPlayerX=player.x+player.size/2;
-    let centerOfPlayerY=player.y+player.size/2;
     let enemyXcoords=enemies[i][0];
     let enemyYcoords=enemies[i][1];
     //find distance between enemy and player
@@ -168,7 +180,6 @@ function ratShooterIII() {
 
   function draw() {
     request_id = requestAnimationFrame(draw);
-    console.log('moveLeft = ' + moveLeft+ ' ' + 'moveUp = '+moveUp);
     
     now = Date.now();
     let elapsed = now - then;
@@ -199,20 +210,42 @@ function ratShooterIII() {
     }
 
 
-    //console.log('key = ' + key);
-    //console.log('move right = ' + moveRight);
-
 
     //draw enemies
     context.fillStyle = enemy.color;
     for (let i = 0; i < enemies.length; i++) {
       context.fillRect(enemies[i][0], enemies[i][1], enemies[i][2], enemies[i][3]);
-      //console.log(enemies[i][0]);
     }
     moveEnemiesTowardsPlayer();
+
+    //draw bullets
+    shoot()
+
+
     //i think this helps the screen refresh but we'll have to see
     context.clearRect(0, 0, canvas.size, canvas.size);
 
+  }
+
+  function shoot() {
+    /*
+    shoots a projectile from center of player.
+    projectile travels at constant pace.
+    projectile disappears when it hits canvas edge.
+    projectile kills enemy if they collide.
+    projectile is shot when you press space.
+    */
+    if (spaceBarPressed === true){
+      bullets.push([(player.x + player.size/2) , (player.y + player.size/2)]);
+    }
+    context.fillStyle = bullet.color;
+    for (let i=0; i< bullets.length; i++){
+      context.fillRect(bullets[i][0],bullets[i][1],bullet.size,bullet.size);
+    }
+  }
+
+  function checkCollisions(){
+    //todo
   }
 
   function pauseGame(){
