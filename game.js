@@ -42,6 +42,7 @@ function ratShooterIII() {
     x: 0,
     y: 0,
     size: 10,
+    speed:1,
     xChange: 10,
     yChange: 10,
     color: 'blue'
@@ -134,23 +135,31 @@ function ratShooterIII() {
     console.log('distance between enemy ' + i + ' and player is ' + distance)
 
     //normalize direction towards player (give appropriate x and y change)
-    let newEnemyX= enemyXcoords/distance;
-    let newEnemyY= enemyYcoords/distance;
+    let dx=Math.abs(centerOfPlayerX-enemyXcoords);
+    let dy=Math.abs(centerOfPlayerY-enemyYcoords);
     
-    if (enemyXcoords<player.x && enemyXcoords>0){
+    let newEnemyX= dx/distance;
+    let newEnemyY= dy/distance;
+    
+    if (enemyXcoords>player.x){
       newEnemyX=newEnemyX*-1;
     }
+    /*
     else if (enemyXcoords<player.x && enemyXcoords<0){
-      newEnemyX=newEnemyX+5;
+      newEnemyX=newEnemyX;
     }
-    if (enemyYcoords<player.y && enemyYcoords>0){
+    */
+    if (enemyYcoords>player.y){
       newEnemyY=newEnemyY*-1;
     }
+    /*
     else if (enemyYcoords<player.y && enemyYcoords<0){
-      newEnemyY=newEnemyY-5;
+      newEnemyY=newEnemyY;
     }
-    enemies[i][0]= enemyXcoords - newEnemyX;
-    enemies[i][1]=enemyYcoords - newEnemyY;
+    */
+
+    enemies[i][0]= enemyXcoords + newEnemyX;
+    enemies[i][1]=enemyYcoords + newEnemyY;
 
     console.log('new coords: '+ enemies[i][0] +','+ enemies[i][1]);
   }
