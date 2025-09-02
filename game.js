@@ -3,7 +3,7 @@ const context = canvas.getContext("2d");
 context.fillStyle = "red";
 let currentGame;
 
-let fpsInterval = 1000 / 30;
+let fpsInterval = 1000 / 60;
 let now;
 let then = Date.now();
 let request_id;
@@ -23,7 +23,11 @@ function ratShooterIII() {
   if (currentGame == 'mazeGame') {
     return;
   }
-  let key;
+  let fpsInterval=1000/30;
+  let now;
+  let then = Date.now();
+
+
   let request_id;
   canvas.removeEventListener('click', ratRaceII, { once: true });
   currentGame = 'shooterGame';
@@ -35,8 +39,8 @@ function ratShooterIII() {
     x: canvas.height / 2,
     y: canvas.width / 2,
     size: 50,
-    xChange: 10,
-    yChange: 10,
+    xChange: 2,
+    yChange: 2,
     color: "yellow"
   }
   let moveUp =false;
@@ -47,7 +51,7 @@ function ratShooterIII() {
     x: 0,
     y: 0,
     size: 10,
-    speed:1,
+    speed:0.2,
     xChange: 10,
     yChange: 10,
     color: 'blue'
@@ -147,8 +151,8 @@ function ratShooterIII() {
       newEnemyY=newEnemyY*-1;
     }
 
-    enemies[i][0]= enemyXcoords + newEnemyX;
-    enemies[i][1]=enemyYcoords + newEnemyY;
+    enemies[i][0]= enemyXcoords + (newEnemyX * enemy.speed);
+    enemies[i][1]= enemyYcoords + (newEnemyY * enemy.speed);
 
     //console.log('new coords: '+ enemies[i][0] +','+ enemies[i][1]);
   }
@@ -157,8 +161,12 @@ function ratShooterIII() {
 //document.getElementById('makeEnemiesMove').addEventListener('click',moveEnemiesTowardsPlayer,false);
 
   function draw() {
-    now = Date.now();
     request_id = requestAnimationFrame(draw);
+    now = Date.now();
+    let elapsed = now - then;
+    if (elapsed > fpsInterval){
+      then = now - (elapsed % fpsInterval);
+    }
     context.fillStyle = "red";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
