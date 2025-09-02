@@ -23,6 +23,7 @@ function ratShooterIII() {
   if (currentGame == 'mazeGame') {
     return;
   }
+  let key;
   let request_id;
   canvas.removeEventListener('click', ratRaceII, { once: true });
   currentGame = 'shooterGame';
@@ -38,6 +39,10 @@ function ratShooterIII() {
     yChange: 10,
     color: "yellow"
   }
+  let moveUp =false;
+  let moveDown = false;
+  let moveRight = false;
+  let moveLeft = false;
   let enemy = {
     x: 0,
     y: 0,
@@ -56,11 +61,6 @@ function ratShooterIII() {
     draw()
   }
 
-  let moveUp = true;
-  let moveDown = true;
-  let moveRight = true;
-  let moveLeft = true;
-
 
   function activate(event) {
     const key = event.key;
@@ -70,23 +70,25 @@ function ratShooterIII() {
         key === 'ArrowUp'){
           event.preventDefault();
         }
-    if (moveRight && key === 'ArrowRight' && player.x + player.size < canvas.width) {
-      player.x = player.x + player.xChange;
+    if (key === 'ArrowRight' ){
+      moveRight=true;
     }
-    if (moveLeft && key === 'ArrowLeft' && player.x > canvas.width - canvas.width) {
-      player.x = player.x - player.xChange;
+    else if (key === 'ArrowLeft' ){
+      moveLeft=true;
     }
-    if (moveDown && key === 'ArrowDown' && player.y + player.size < canvas.height) {
-      player.y = player.y + player.yChange;
+    else if (key === 'ArrowUp' ){
+      moveUp=true;
     }
-    if (moveUp && key === 'ArrowUp' && player.y > canvas.height - canvas.height) {
-      player.y = player.y - player.yChange;
+    else if (key === 'ArrowDown' ){
+      moveDown=true;
     }
-
   }
 
   function deactivate() {
-    //todo
+  moveUp =false;
+  moveDown = false;
+  moveRight = false;
+  moveLeft = false;
   }
 
   function spawnEnemies(num) {
@@ -165,6 +167,23 @@ function ratShooterIII() {
     context.fillStyle = player.color;
     context.fillRect(player.x, player.y, player.size, player.size);
 
+    //player movement
+    if (moveRight===true && player.x + player.size < canvas.width) {
+      player.x=player.x+player.xChange;
+    }
+    else if (moveLeft===true && player.x > canvas.width - canvas.width) {
+      player.x = player.x - player.xChange;
+    }
+    else if (moveDown===true && player.y + player.size < canvas.height) {
+      player.y = player.y + player.yChange;
+    }
+    else if ( moveUp===true && player.y > canvas.height - canvas.height) {
+      player.y = player.y - player.yChange;
+    }
+    //console.log('key = ' + key);
+    //console.log('move right = ' + moveRight);
+
+
     //draw enemies
     context.fillStyle = enemy.color;
     for (let i = 0; i < enemies.length; i++) {
@@ -176,6 +195,7 @@ function ratShooterIII() {
     context.clearRect(0, 0, canvas.size, canvas.size);
 
   }
+
   function pauseGame(){
     cancelAnimationFrame(request_id);
     console.log('game paused');
@@ -183,7 +203,6 @@ function ratShooterIII() {
 
   document.getElementById('pause').addEventListener('click',pauseGame,false);
 }
-
 //RatRaceII
 function ratRaceII() {
   console.log(currentGame);
