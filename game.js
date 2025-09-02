@@ -162,6 +162,8 @@ function ratShooterIII() {
 
   function draw() {
     request_id = requestAnimationFrame(draw);
+    console.log('moveLeft = ' + moveLeft+ ' ' + 'moveUp = '+moveUp);
+    
     now = Date.now();
     let elapsed = now - then;
     if (elapsed > fpsInterval){
@@ -175,19 +177,22 @@ function ratShooterIII() {
     context.fillStyle = player.color;
     context.fillRect(player.x, player.y, player.size, player.size);
 
-    //player movement
+    //player movement (horizontal and vertical)
+
     if (moveRight===true && player.x + player.size < canvas.width) {
       player.x=player.x+player.xChange;
     }
-    else if (moveLeft===true && player.x > canvas.width - canvas.width) {
+    if (moveLeft===true && player.x > canvas.width - canvas.width) {
       player.x = player.x - player.xChange;
     }
-    else if (moveDown===true && player.y + player.size < canvas.height) {
+    if (moveDown===true && player.y + player.size < canvas.height) {
       player.y = player.y + player.yChange;
     }
-    else if ( moveUp===true && player.y > canvas.height - canvas.height) {
+    if ( moveUp===true && player.y > canvas.height - canvas.height) {
       player.y = player.y - player.yChange;
     }
+
+
     //console.log('key = ' + key);
     //console.log('move right = ' + moveRight);
 
