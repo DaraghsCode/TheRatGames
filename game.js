@@ -181,6 +181,7 @@ function ratShooterIII() {
 
 
     //normalize direction towards player (give appropriate x and y change)
+    //dividing by zero bad, very bad
     if (distance>0){
     let newEnemyX= dx/distance;
     let newEnemyY= dy/distance;
@@ -243,11 +244,7 @@ function ratShooterIII() {
 
   function shoot() {
     /*
-    shoots a projectile from center of player.
-    projectile travels at constant pace.
-    projectile disappears when it hits canvas edge.
     projectile kills enemy if they collide.
-    projectile is shot when you press space.
     */
 
     if (spaceBarPressed === true){
