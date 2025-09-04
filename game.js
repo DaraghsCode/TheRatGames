@@ -28,7 +28,7 @@ function ratShooterIII() {
   }
 
   //initialising global variables
-  let fpsInterval=1000/30;
+  let fpsInterval = 1000 / 30;
   let now;
   let then = Date.now();
   let request_id;
@@ -40,33 +40,33 @@ function ratShooterIII() {
     yChange: 2,
     color: "yellow"
   }
-  let centerOfPlayerX=player.x+player.size/2;
-  let centerOfPlayerY=player.y+player.size/2;
-   let enemy = {
+  let bulletDirection = 'w';
+  let enemy = {
     x: 0,
     y: 0,
     size: 10,
-    speed:0.2,
+    speed: 0.2,
     xChange: 10,
     yChange: 10,
     color: 'blue'
   }
   let bullet = {
-    x:0,
-    y:0,
+    x: 0,
+    y: 0,
+    direction: 'w',
     size: 5,
     xChange: 5,
     yChange: 5,
     color: 'green'
   }
-  let bullets =[];
+  let bullets = [];
   let enemies = [];
-  let moveUp =false;
+  let moveUp = false;
   let moveDown = false;
   let moveRight = false;
   let moveLeft = false;
   let spaceBarPressed = false;
-  
+
   init()
 
 
@@ -79,45 +79,67 @@ function ratShooterIII() {
     draw()
     spawnEnemies(4);
 
-  //clear  rat race 2 bits from html
-  canvas.removeEventListener('click', ratRaceII, { once: true });
-  currentGame = 'shooterGame';
-  canvas.removeEventListener('click', ratRaceII);
-  document.getElementById('playerTime').innerHTML = "";
+    //clear  rat race 2 bits from html
+    canvas.removeEventListener('click', ratRaceII, { once: true });
+    currentGame = 'shooterGame';
+    canvas.removeEventListener('click', ratRaceII);
+    document.getElementById('playerTime').innerHTML = "";
+    document.getElementById('wasd').innerHTML = 'w';
   }
 
   function activate(event) {
     const key = event.key;
     if (key === 'ArrowRight' ||
-        key === 'ArrowLeft' ||
-        key === 'ArrowDown' ||
-        key === 'ArrowUp' ||
-        key === ' '){
-          event.preventDefault();
-        }
-    if (key === 'ArrowRight' ){
-      moveRight=true;
+      key === 'ArrowLeft' ||
+      key === 'ArrowDown' ||
+      key === 'ArrowUp' ||
+      key === ' ' ||
+      key === 'w' ||
+      key === 'a' ||
+      key === 's' ||
+      key === 'd'
+    ) {
+      event.preventDefault();
     }
-    if (key === 'ArrowLeft' ){
-      moveLeft=true;
+
+    //player movement keys
+    if (key === 'ArrowRight') {
+      moveRight = true;
     }
-    if (key === 'ArrowUp' ){
-      moveUp=true;
+    if (key === 'ArrowLeft') {
+      moveLeft = true;
     }
-    if (key === 'ArrowDown' ){
-      moveDown=true;
+    if (key === 'ArrowUp') {
+      moveUp = true;
     }
-    if (key === ' '){
+    if (key === 'ArrowDown') {
+      moveDown = true;
+    }
+    if (key === ' ') {
       spaceBarPressed = true;
+    }
+
+    //bullet direction keys
+    if (key === 'w') {
+      bulletDirection = 'w'
+    }
+    if (key === 'a') {
+      bulletDirection = 'a'
+    }
+    if (key === 's') {
+      bulletDirection = 's'
+    }
+    if (key === 'd') {
+      bulletDirection = 'd'
     }
   }
 
   function deactivate() {
-  moveUp =false;
-  moveDown = false;
-  moveRight = false;
-  moveLeft = false;
-  spaceBarPressed = false;
+    moveUp = false;
+    moveDown = false;
+    moveRight = false;
+    moveLeft = false;
+    spaceBarPressed = false;
   }
 
   function spawnEnemies(num) {
@@ -134,71 +156,70 @@ function ratShooterIII() {
         if (randxCoordinate > 0 &&
           randxCoordinate + enemy.size < 0 + canvas.height &&
           randyCoordinate > 0 &&
-          randyCoordinate + enemy.size < canvas.height) 
-        {
-            randxCoordinate = (Math.floor((Math.random() * (canvas.height + margin * 2)))) - margin;
-            randyCoordinate = (Math.floor((Math.random() * (canvas.height + margin * 2)))) - margin;
+          randyCoordinate + enemy.size < canvas.height) {
+          randxCoordinate = (Math.floor((Math.random() * (canvas.height + margin * 2)))) - margin;
+          randyCoordinate = (Math.floor((Math.random() * (canvas.height + margin * 2)))) - margin;
         }
         //if coords are outside the canvas - exit loop and push to enemies list
-        else{
+        else {
           whithinbounds = false;
         }
       }
-     // console.log('enemy number ' + i + " has spawned" + ' at coordinates ' + randxCoordinate + ',' + randyCoordinate);
+      // console.log('enemy number ' + i + " has spawned" + ' at coordinates ' + randxCoordinate + ',' + randyCoordinate);
       enemies.push([randxCoordinate, randyCoordinate, enemy.size, enemy.size])
     }
     //console.log(enemies);
 
   }
 
- function moveEnemiesTowardsPlayer(){
-  // a function that updates the coords of enemies
-  for (let i=0; i < enemies.length; i++){
+  function moveEnemiesTowardsPlayer() {
+    // a function that updates the coords of enemies
+    for (let i = 0; i < enemies.length; i++) {
 
-    //enemy center
-    let enemyXCenter=(enemies[i][0]) + enemy.size/2;
-    let enemyYCenter=(enemies[i][1]) + enemy.size/2;
-
-
-
-    //find distance between enemy and player
-    //console.log('enemy ' + i + 'has the following X,Y values: '+ Math.floor(enemies[i][0]) + ',' + Math.floor(enemies[i][1]));
-    //console.log('enemy ' + i + 'has the following center coords: '+ Math.floor(enemyXCenter)+','+Math.floor(enemyYCenter));
+      //enemy center
+      let enemyXCenter = (enemies[i][0]) + enemy.size / 2;
+      let enemyYCenter = (enemies[i][1]) + enemy.size / 2;
 
 
 
-    //center of player
-    let centerOfPlayerX=player.x+(player.size/2)
-    let centerOfPlayerY=player.y+(player.size/2)
+      //find distance between enemy and player
+      //console.log('enemy ' + i + 'has the following X,Y values: '+ Math.floor(enemies[i][0]) + ',' + Math.floor(enemies[i][1]));
+      //console.log('enemy ' + i + 'has the following center coords: '+ Math.floor(enemyXCenter)+','+Math.floor(enemyYCenter));
 
 
 
-    //distance
-    let dx=centerOfPlayerX-enemyXCenter;
-    let dy=centerOfPlayerY-enemyYCenter;
-    let distance=Math.sqrt((dx ** 2) + (dy ** 2))
-    //console.log('distance: '+distance);
+      //center of player
+      let centerOfPlayerX = player.x + (player.size / 2)
+      let centerOfPlayerY = player.y + (player.size / 2)
 
 
-    //normalize direction towards player (give appropriate x and y change)
-    //dividing by zero bad, very bad
-    if (distance>0){
-    let newEnemyX= dx/distance;
-    let newEnemyY= dy/distance;
-    
-    enemies[i][0]= enemies[i][0] + (newEnemyX * enemy.speed);
-    enemies[i][1]= enemies[i][1] + (newEnemyY * enemy.speed);
+
+      //distance
+      let dx = centerOfPlayerX - enemyXCenter;
+      let dy = centerOfPlayerY - enemyYCenter;
+      let distance = Math.sqrt((dx ** 2) + (dy ** 2))
+      //console.log('distance: '+distance);
+
+
+      //normalize direction towards player (give appropriate x and y change)
+      //dividing by zero bad, very bad
+      if (distance > 0) {
+        let newEnemyX = dx / distance;
+        let newEnemyY = dy / distance;
+
+        enemies[i][0] = enemies[i][0] + (newEnemyX * enemy.speed);
+        enemies[i][1] = enemies[i][1] + (newEnemyY * enemy.speed);
+      }
+
     }
-  
   }
- } 
 
   function draw() {
     request_id = requestAnimationFrame(draw);
-    
+
     now = Date.now();
     let elapsed = now - then;
-    if (elapsed > fpsInterval){
+    if (elapsed > fpsInterval) {
       then = now - (elapsed % fpsInterval);
     }
     context.fillStyle = "red";
@@ -211,19 +232,22 @@ function ratShooterIII() {
 
     //player movement (horizontal and vertical)
 
-    if (moveRight===true && player.x + player.size < canvas.width) {
-      player.x=player.x+player.xChange;
+    if (moveRight === true && player.x + player.size < canvas.width) {
+      player.x = player.x + player.xChange;
     }
-    if (moveLeft===true && player.x > canvas.width - canvas.width) {
+    if (moveLeft === true && player.x > canvas.width - canvas.width) {
       player.x = player.x - player.xChange;
     }
-    if (moveDown===true && player.y + player.size < canvas.height) {
+    if (moveDown === true && player.y + player.size < canvas.height) {
       player.y = player.y + player.yChange;
     }
-    if ( moveUp===true && player.y > canvas.height - canvas.height) {
+    if (moveUp === true && player.y > canvas.height - canvas.height) {
       player.y = player.y - player.yChange;
     }
 
+
+    //keeps track of current last wasd input
+    document.getElementById('wasd').innerHTML = bulletDirection;
 
 
     //draw enemies
@@ -247,36 +271,80 @@ function ratShooterIII() {
     projectile kills enemy if they collide.
     */
 
-    if (spaceBarPressed === true){
-      bullets.push([(player.x + player.size/2) , (player.y + player.size/2)]);
+    if (spaceBarPressed === true) {
+      bullets.push([(player.x + player.size / 2), (player.y + player.size / 2),bulletDirection]);
     }
     context.fillStyle = bullet.color;
-    for (let i=0; i< bullets.length; i++){
+    for (let i = 0; i < bullets.length; i++) {
+
+
+      let bX = bullets[i][0];
+      let bY = bullets[i][1];
+      let bDirection=bullets[i][2];
+
       //draw bullets
-      context.fillRect(bullets[i][0],bullets[i][1],bullet.size,bullet.size);
+      context.fillRect(bX, bY, bullet.size, bullet.size);
+
+
       //move bullets
-      bullets[i][0] += bullet.xChange;
-      bullets[i][1] += bullet.yChange;
-      //remove bullet from list if it has reached canvas boundary
-      if (bullets[i][0] >= (canvas.width)||
-          bullets[i][1] >= (canvas.height)){
-        console.log('OOB')
-        bullets.splice(i,1);
+
+
+      //up
+      if (bDirection === 'w') {
+        bullets[i][0]=bX
+        bullets[i][1]-=bullet.yChange
       }
+
+      //left
+      else if (bDirection === 'a'){
+        bullets[i][0]=bX-bullet.xChange;
+        bullets[i][1]=bY;
+      }
+
+      //down
+      else if (bDirection === 's'){
+        bullets[i][0]=bX;
+        bullets[i][1]=bY+bullet.yChange;
+      }
+
+      //right
+      else if (bDirection === 'd'){
+        bullets[i][0]=bX+bullet.xChange;
+        bullets[i][1]=bY;
+      }
+      //bullet travelss up by default/in case unexpected thing happens
+      else {
+      bullets[i][0] = bX + bullet.xChange;
+      bullets[i][1] = bY + bullet.yChange;
+      }
+
+      
+
+
+      //remove bullet from list if it has reached canvas boundary
+      if (bX >= (canvas.width) ||
+        bY >= (canvas.height) ||
+        bX < (canvas.width - canvas.width) ||
+        bY < (canvas.height - canvas.height)) {
+        //console.log('OOB')
+        bullets.splice(i, 1);
+      }
+
+
     }
-    console.log('first bullet: '+bullets[0]+'numBullets= '+bullets.length);
-    
+    console.log('numBullets= '+bullets.length);
+
   }
 
-  function checkCollisions(){
+  function checkCollisions() {
     //todo
   }
 
-  function pauseGame(){
+  function pauseGame() {
     cancelAnimationFrame(request_id);
     console.log('game paused');
   };
-  document.getElementById('pause').addEventListener('click',pauseGame,false);
+  document.getElementById('pause').addEventListener('click', pauseGame, false);
 }
 
 
