@@ -27,9 +27,11 @@ function ratShooterIII() {
     return;
   }
 
-  //initialising global variables
+  //initializing global variables
   let fpsInterval = 1000 / 30;
   let now;
+  let lastShotFired;
+  let fired = false;
   let then = Date.now();
   let request_id;
   let player = {
@@ -44,7 +46,7 @@ function ratShooterIII() {
   let enemy = {
     x: 0,
     y: 0,
-    size: 10,
+    size: 25,
     speed: 0.2,
     xChange: 10,
     yChange: 10,
@@ -269,82 +271,100 @@ function ratShooterIII() {
   function shoot() {
     /*
     projectile kills enemy if they collide.
+    player has a limited fire rate (no death beams)
     */
 
+
+    let shotFired;
+    let delta = 1500; //1.5 secs between shots (semi auto style)
+
+
     if (spaceBarPressed === true) {
-      bullets.push([(player.x + player.size / 2), (player.y + player.size / 2),bulletDirection]);
+      shotFired = Date.now() //time that spacebar is pressed
+
+      if (fired === true && (shotFired - lastShotFired) <= delta) {
+        console.log('not enough time!')
+        return
+      }
+    
+
+
+    fired = true
+    lastShotFired = Date.now()//time shot was fired
+    //console.log('now: ' + now + ' then: ' + lastShotFired + ' diff: ' + (now - lastShotFired) / 1000 + 'seconds');
+    bullets.push([(player.x + player.size / 2), (player.y + player.size / 2), bulletDirection]);
+  }
+  context.fillStyle = bullet.color;
+  for (let i = 0; i < bullets.length; i++) {
+
+
+    let bX = bullets[i][0];
+    let bY = bullets[i][1];
+    let bDirection = bullets[i][2];
+
+    //draw bullets
+    context.fillRect(bX, bY, bullet.size, bullet.size);
+
+
+    //move bullets
+
+
+    //up
+    if (bDirection === 'w') {
+      bullets[i][0] = bX
+      bullets[i][1] -= bullet.yChange
     }
-    context.fillStyle = bullet.color;
-    for (let i = 0; i < bullets.length; i++) {
 
+    //left
+    else if (bDirection === 'a') {
+      bullets[i][0] = bX - bullet.xChange;
+      bullets[i][1] = bY;
+    }
 
-      let bX = bullets[i][0];
-      let bY = bullets[i][1];
-      let bDirection=bullets[i][2];
+    //down
+    else if (bDirection === 's') {
+      bullets[i][0] = bX;
+      bullets[i][1] = bY + bullet.yChange;
+    }
 
-      //draw bullets
-      context.fillRect(bX, bY, bullet.size, bullet.size);
-
-
-      //move bullets
-
-
-      //up
-      if (bDirection === 'w') {
-        bullets[i][0]=bX
-        bullets[i][1]-=bullet.yChange
-      }
-
-      //left
-      else if (bDirection === 'a'){
-        bullets[i][0]=bX-bullet.xChange;
-        bullets[i][1]=bY;
-      }
-
-      //down
-      else if (bDirection === 's'){
-        bullets[i][0]=bX;
-        bullets[i][1]=bY+bullet.yChange;
-      }
-
-      //right
-      else if (bDirection === 'd'){
-        bullets[i][0]=bX+bullet.xChange;
-        bullets[i][1]=bY;
-      }
-      //bullet travelss up by default/in case unexpected thing happens
-      else {
+    //right
+    else if (bDirection === 'd') {
+      bullets[i][0] = bX + bullet.xChange;
+      bullets[i][1] = bY;
+    }
+    //bullet travelss up by default/in case unexpected thing happens
+    else {
       bullets[i][0] = bX + bullet.xChange;
       bullets[i][1] = bY + bullet.yChange;
-      }
-
-      
-
-
-      //remove bullet from list if it has reached canvas boundary
-      if (bX >= (canvas.width) ||
-        bY >= (canvas.height) ||
-        bX < (canvas.width - canvas.width) ||
-        bY < (canvas.height - canvas.height)) {
-        //console.log('OOB')
-        bullets.splice(i, 1);
-      }
-
-
     }
-    console.log('numBullets= '+bullets.length);
+
+
+
+
+    //remove bullet from list if it has reached canvas boundary
+    if (bX >= (canvas.width) ||
+      bY >= (canvas.height) ||
+      bX < (canvas.width - canvas.width) ||
+      bY < (canvas.height - canvas.height)) {
+      //console.log('OOB')
+      bullets.splice(i, 1);
+    }
+
 
   }
+  //console.log('numBullets= ' + bullets.length);
 
-  function checkCollisions() {
-    //todo
-  }
+}
 
-  function pauseGame() {
-    cancelAnimationFrame(request_id);
-    console.log('game paused');
-  };
-  document.getElementById('pause').addEventListener('click', pauseGame, false);
+function checkCollisions() {
+  //todo
+}
+
+function pauseGame() {
+  cancelAnimationFrame(request_id);
+  console.log('game paused');
+};
+document.getElementById('pause').addEventListener('click', pauseGame, false);
 }
 
 
