@@ -52,6 +52,8 @@ function ratShooterIII() {
     color: 'blue'
   }
   let bullet = {
+    x:0,
+    y:0,
     size: 5,
     xChange: 5,
     yChange: 5,
@@ -160,8 +162,8 @@ function ratShooterIII() {
 
 
     //find distance between enemy and player
-    console.log('enemy ' + i + 'has the following X,Y values: '+ Math.floor(enemies[i][0]) + ',' + Math.floor(enemies[i][1]));
-    console.log('enemy ' + i + 'has the following center coords: '+ Math.floor(enemyXCenter)+','+Math.floor(enemyYCenter));
+    //console.log('enemy ' + i + 'has the following X,Y values: '+ Math.floor(enemies[i][0]) + ',' + Math.floor(enemies[i][1]));
+    //console.log('enemy ' + i + 'has the following center coords: '+ Math.floor(enemyXCenter)+','+Math.floor(enemyYCenter));
 
 
 
@@ -175,7 +177,7 @@ function ratShooterIII() {
     let dx=centerOfPlayerX-enemyXCenter;
     let dy=centerOfPlayerY-enemyYCenter;
     let distance=Math.sqrt((dx ** 2) + (dy ** 2))
-    console.log('distance: '+distance);
+    //console.log('distance: '+distance);
 
 
     //normalize direction towards player (give appropriate x and y change)
@@ -183,12 +185,10 @@ function ratShooterIII() {
     let newEnemyX= dx/distance;
     let newEnemyY= dy/distance;
     
-
     enemies[i][0]= enemies[i][0] + (newEnemyX * enemy.speed);
     enemies[i][1]= enemies[i][1] + (newEnemyY * enemy.speed);
     }
-    console.log('player x,y: '+player.x+','+player.y)
-    console.log('player center coords: ', + centerOfPlayerX +','+ centerOfPlayerY);
+  
   }
  } 
 
@@ -249,13 +249,26 @@ function ratShooterIII() {
     projectile kills enemy if they collide.
     projectile is shot when you press space.
     */
+
     if (spaceBarPressed === true){
       bullets.push([(player.x + player.size/2) , (player.y + player.size/2)]);
     }
     context.fillStyle = bullet.color;
     for (let i=0; i< bullets.length; i++){
+      //draw bullets
       context.fillRect(bullets[i][0],bullets[i][1],bullet.size,bullet.size);
+      //move bullets
+      bullets[i][0] += bullet.xChange;
+      bullets[i][1] += bullet.yChange;
+      //remove bullet from list if it has reached canvas boundary
+      if (bullets[i][0] >= (canvas.width)||
+          bullets[i][1] >= (canvas.height)){
+        console.log('OOB')
+        bullets.splice(i,1);
+      }
     }
+    console.log('first bullet: '+bullets[0]+'numBullets= '+bullets.length);
+    
   }
 
   function checkCollisions(){
