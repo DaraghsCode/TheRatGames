@@ -152,29 +152,43 @@ function ratShooterIII() {
  function moveEnemiesTowardsPlayer(){
   // a function that updates the coords of enemies
   for (let i=0; i < enemies.length; i++){
-    let enemyXcoords=enemies[i][0];
-    let enemyYcoords=enemies[i][1];
+
+    //enemy center
+    let enemyXCenter=(enemies[i][0]) + enemy.size/2;
+    let enemyYCenter=(enemies[i][1]) + enemy.size/2;
+
+
+
     //find distance between enemy and player
-    let distance=Math.sqrt( ((centerOfPlayerX-enemyXcoords) ** 2) + ((centerOfPlayerY-enemyYcoords) ** 2))
+    console.log('enemy ' + i + 'has the following X,Y values: '+ Math.floor(enemies[i][0]) + ',' + Math.floor(enemies[i][1]));
+    console.log('enemy ' + i + 'has the following center coords: '+ Math.floor(enemyXCenter)+','+Math.floor(enemyYCenter));
+
+
+
+    //center of player
+    let centerOfPlayerX=player.x+(player.size/2)
+    let centerOfPlayerY=player.y+(player.size/2)
+
+
+
+    //distance
+    let dx=centerOfPlayerX-enemyXCenter;
+    let dy=centerOfPlayerY-enemyYCenter;
+    let distance=Math.sqrt((dx ** 2) + (dy ** 2))
+    console.log('distance: '+distance);
+
 
     //normalize direction towards player (give appropriate x and y change)
-    let dx=Math.abs(centerOfPlayerX-enemyXcoords);
-    let dy=Math.abs(centerOfPlayerY-enemyYcoords);
-    
+    if (distance>0){
     let newEnemyX= dx/distance;
     let newEnemyY= dy/distance;
     
-    if (enemyXcoords>player.x){
-      newEnemyX=newEnemyX*-1;
-    }
-    if (enemyYcoords>player.y){
-      newEnemyY=newEnemyY*-1;
-    }
 
-    enemies[i][0]= enemyXcoords + (newEnemyX * enemy.speed);
-    enemies[i][1]= enemyYcoords + (newEnemyY * enemy.speed);
-
-    //console.log('new coords: '+ enemies[i][0] +','+ enemies[i][1]);
+    enemies[i][0]= enemies[i][0] + (newEnemyX * enemy.speed);
+    enemies[i][1]= enemies[i][1] + (newEnemyY * enemy.speed);
+    }
+    console.log('player x,y: '+player.x+','+player.y)
+    console.log('player center coords: ', + centerOfPlayerX +','+ centerOfPlayerY);
   }
  } 
 
@@ -252,6 +266,7 @@ function ratShooterIII() {
     cancelAnimationFrame(request_id);
     console.log('game paused');
   };
+  document.getElementById('pause').addEventListener('click',pauseGame,false);
 }
 
 
@@ -274,7 +289,6 @@ function ratRaceII() {
   playerImage.src = 'cheese.png';
   tileImage.src = "WallTileNormal.png";
   let timerInterval = null;
-  let timerStopped = false;
   let player = {
     x: 0,
     y: 150,
