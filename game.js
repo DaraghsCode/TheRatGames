@@ -7,26 +7,23 @@ let fpsInterval = 1000 / 60;
 let now;
 let then = Date.now();
 let request_id;
-document.querySelector('#gameList').addEventListener('click', ratShooterIII, false);
+document.getElementById('ratRaceII').addEventListener('click', ratRaceII, false);
+document.getElementById('ratShooterIII').addEventListener('click', ratShooterIII, false);
 document.addEventListener("DOMContentLoaded", startMenu, false);
+document.getElementById("gameTitle").innerHTML="Main Menu"
 
 function startMenu() {
   context.font = "bold 20px Arial";
   context.fillStyle = "black";
   context.textAlign = "center";
-  context.fillText("Click anywhere to start", canvas.width / 2, canvas.height / 2);
+  context.fillText("Welcome", canvas.width / 2, canvas.height / 2);
   canvas.addEventListener('click', ratRaceII, { once: true });
 
 }
 
+//RatShooterIII
 function ratShooterIII() {
-
-
-  //stops running rat race
-  if (currentGame == 'mazeGame') {
-    return;
-  }
-
+  
   //initializing global variables
   let fpsInterval = 1000 / 30;
   let now;
@@ -82,8 +79,9 @@ function ratShooterIII() {
     spawnEnemies(4);
 
     //clear  rat race 2 bits from html
+    document.getElementById("gameTitle").innerHTML="Rat Shooter III"
     canvas.removeEventListener('click', ratRaceII, { once: true });
-    currentGame = 'shooterGame';
+    currentGame ='ratRaceIII';
     canvas.removeEventListener('click', ratRaceII);
     document.getElementById('playerTime').innerHTML = "";
     document.getElementById('wasd').innerHTML = 'w';
@@ -218,7 +216,7 @@ function ratShooterIII() {
 
   function draw() {
     request_id = requestAnimationFrame(draw);
-
+    //console.log('rr3')
     now = Date.now();
     let elapsed = now - then;
     if (elapsed > fpsInterval) {
@@ -264,7 +262,7 @@ function ratShooterIII() {
 
 
     //i think this helps the screen refresh but we'll have to see
-    context.clearRect(0, 0, canvas.size, canvas.size);
+    //context.clearRect(0, 0, canvas.width, canvas.height);
 
   }
 
@@ -367,20 +365,15 @@ function pauseGame() {
 document.getElementById('pause').addEventListener('click', pauseGame, false);
 }
 
-
-
-
-
-
 //RatRaceII
 function ratRaceII() {
+
   console.log(currentGame);
-  if (currentGame == 'shooterGame') {
-    console.log('RatRaceII called but RatRaceShooter is running')
-    return;
-  }
+    //console.log('RatRaceII called but RatRaceShooter is running')
   console.log('you have succesfully started RatRaceII')
+  document.getElementById("gameTitle").innerHTML="Rat Race II";
   let level = 1;
+  let fpsInterval = 1000 / 30;
   let map;
   let tileImage = new Image();
   let playerImage = new Image();
@@ -457,6 +450,8 @@ function ratRaceII() {
   }
 
   function draw() {
+    //console.log('RR2 running...')
+    console.log(currentGame);
     request_id = window.requestAnimationFrame(draw);
     let now = Date.now();
     let elapsed = now - then;
@@ -540,7 +535,6 @@ function ratRaceII() {
     context.font = "bold 15px Arial";
     context.fillText("Click anywhere to start again", canvas.width / 2, canvas.height / 2 + 200);
     canvas.addEventListener("click", ratRaceII, { once: true });
-    timerStopped = true;
     if (timerInterval) {
       clearInterval(timerInterval);
     };
