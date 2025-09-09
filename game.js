@@ -1,506 +1,379 @@
-let canvas = document.getElementById("canvas");
-const context = canvas.getContext("2d");
-context.fillStyle = "red";
-let currentGame;
+class GameManager {
+  constructor(canvasId) {
+    this.canvas = document.getElementById(canvasId);
+    this.context = this.canvas.getContext('2d');
+    this.currentGame = null;
+  }
 
-let fpsInterval = 1000 / 60;
-let now;
-let then = Date.now();
-let request_id;
-document.getElementById('ratRaceII').addEventListener('click', ratRaceII, false);
-document.getElementById('ratShooterIII').addEventListener('click', ratShooterIII, false);
-document.addEventListener("DOMContentLoaded", startMenu, false);
-document.getElementById("gameTitle").innerHTML="Main Menu"
+  start(game) {
+    if (this.currentGame) {
+      this.currentGame.stop();
+    }
+    this.currentGame = game;
+    game.start(this.context, this.canvas);
+  }
 
-function startMenu() {
-  context.font = "bold 20px Arial";
-  context.fillStyle = "black";
-  context.textAlign = "center";
-  context.fillText("Welcome", canvas.width / 2, canvas.height / 2);
-  canvas.addEventListener('click', ratRaceII, { once: true });
-
+  stop() {
+    if (this.currentGame) {
+      this.currentGame.stop();
+      this.currentGame = null;
+    }
+  }
 }
 
-//RatShooterIII
-function ratShooterIII() {
-  
-  //initializing global variables
-  let fpsInterval = 1000 / 30;
-  let now;
-  let lastShotFired;
-  let fired = false;
-  let then = Date.now();
-  let request_id;
-  let player = {
-    x: canvas.height / 2,
-    y: canvas.width / 2,
-    size: 50,
-    xChange: 2,
-    yChange: 2,
-    color: "yellow"
-  }
-  let bulletDirection = 'w';
-  let enemy = {
-    x: 0,
-    y: 0,
-    size: 25,
-    speed: 0.2,
-    xChange: 10,
-    yChange: 10,
-    color: 'blue'
-  }
-  let bullet = {
-    x: 0,
-    y: 0,
-    direction: 'w',
-    size: 5,
-    xChange: 5,
-    yChange: 5,
-    color: 'green'
-  }
-  let bullets = [];
-  let enemies = [];
-  let moveUp = false;
-  let moveDown = false;
-  let moveRight = false;
-  let moveLeft = false;
-  let spaceBarPressed = false;
-
-  init()
-
-
-
-
-
-  function init() {
-    window.addEventListener("keydown", activate, false);
-    window.addEventListener("keyup", deactivate, false);
-    draw()
-    spawnEnemies(4);
-
-    //clear  rat race 2 bits from html
-    document.getElementById("gameTitle").innerHTML="Rat Shooter III"
-    canvas.removeEventListener('click', ratRaceII, { once: true });
-    currentGame ='ratRaceIII';
-    canvas.removeEventListener('click', ratRaceII);
-    document.getElementById('playerTime').innerHTML = "";
-    document.getElementById('wasd').innerHTML = 'w';
+class RatShooterIII {
+  constructor() {
+    // game state variables
+    this.fpsInterval = 1000 / 30;
+    this.then = Date.now();
+    this.player = null;
+    this.enemy = null;
+    this.bullets = [];
+    this.enemies = [];
+    this.moveUp = false;
+    this.moveDown = false;
+    this.moveLeft = false;
+    this.moveRight = false;
+    this.spaceBarPressed = false;
+    this.bulletDirection = "w";
   }
 
-  function activate(event) {
+  start(context, canvas) {
+    this.context = context;
+    this.canvas = canvas;
+
+    // initialize player, enemy, etc.
+    this.player = {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      size: 50,
+      xChange: 2,
+      yChange: 2,
+      color: "yellow",
+    };
+
+    this.enemy = {
+      x: 0,
+      y: 0,
+      size: 25,
+      speed: 0.2,
+      color: "blue",
+    };
+
+    this.bullets = [];
+    this.enemies = [];
+
+    // keyboard input
+    this.activate = this.activate.bind(this);
+    this.deactivate = this.deactivate.bind(this);
+    window.addEventListener("keydown", this.activate);
+    window.addEventListener("keyup", this.deactivate);
+
+    // bind loop
+    this.loop = this.loop.bind(this);
+    this.requestId = requestAnimationFrame(this.loop);
+
+    // spawn some enemies
+    this.spawnEnemies(4);
+  }
+
+  loop() {
+    this.requestId = requestAnimationFrame(this.loop);
+
+    const now = Date.now();
+    const elapsed = now - this.then;
+    if (elapsed < this.fpsInterval) return;
+    this.then = now;
+
+    // clear screen
+    this.context.fillStyle = "red";
+    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // draw player
+    this.context.fillStyle = this.player.color;
+    this.context.fillRect(
+      this.player.x,
+      this.player.y,
+      this.player.size,
+      this.player.size
+    );
+
+    // player movement
+    if (this.moveRight && this.player.x + this.player.size < this.canvas.width) {
+      this.player.x += this.player.xChange;
+    }
+    if (this.moveLeft && this.player.x > 0) {
+      this.player.x -= this.player.xChange;
+    }
+    if (this.moveDown && this.player.y + this.player.size < this.canvas.height) {
+      this.player.y += this.player.yChange;
+    }
+    if (this.moveUp && this.player.y > 0) {
+      this.player.y -= this.player.yChange;
+    }
+
+    // enemies
+    this.context.fillStyle = this.enemy.color;
+    for (let i = 0; i < this.enemies.length; i++) {
+      this.context.fillRect(this.enemies[i][0], this.enemies[i][1], this.enemies[i][2], this.enemies[i][3])
+    }
+    /*
+    for (let [x, y, w, h] of this.enemies) {
+      this.context.fillRect(x, y, w, h);
+    }
+      */
+    this.moveEnemiesTowardsPlayer();
+
+    // bullets
+    this.shoot();
+  }
+
+  activate(event) {
     const key = event.key;
-    if (key === 'ArrowRight' ||
-      key === 'ArrowLeft' ||
-      key === 'ArrowDown' ||
-      key === 'ArrowUp' ||
-      key === ' ' ||
-      key === 'w' ||
-      key === 'a' ||
-      key === 's' ||
-      key === 'd'
-    ) {
+    if (["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", " "].includes(key)) {
       event.preventDefault();
     }
 
-    //player movement keys
-    if (key === 'ArrowRight') {
-      moveRight = true;
-    }
-    if (key === 'ArrowLeft') {
-      moveLeft = true;
-    }
-    if (key === 'ArrowUp') {
-      moveUp = true;
-    }
-    if (key === 'ArrowDown') {
-      moveDown = true;
-    }
-    if (key === ' ') {
-      spaceBarPressed = true;
-    }
+    if (key === "ArrowRight") this.moveRight = true;
+    if (key === "ArrowLeft") this.moveLeft = true;
+    if (key === "ArrowUp") this.moveUp = true;
+    if (key === "ArrowDown") this.moveDown = true;
+    if (key === " ") this.spaceBarPressed = true;
 
-    //bullet direction keys
-    if (key === 'w') {
-      bulletDirection = 'w'
-    }
-    if (key === 'a') {
-      bulletDirection = 'a'
-    }
-    if (key === 's') {
-      bulletDirection = 's'
-    }
-    if (key === 'd') {
-      bulletDirection = 'd'
+    if (["w", "a", "s", "d"].includes(key)) {
+      this.bulletDirection = key;
     }
   }
 
-  function deactivate() {
-    moveUp = false;
-    moveDown = false;
-    moveRight = false;
-    moveLeft = false;
-    spaceBarPressed = false;
+  deactivate() {
+    this.moveUp = this.moveDown = this.moveLeft = this.moveRight = false;
+    this.spaceBarPressed = false;
   }
 
-  function spawnEnemies(num) {
-    //spawn number of enemies enemies must come from outside the screen and move towards player.
+  spawnEnemies(num) {
+    this.enemies = [];
     for (let i = 0; i < num; i++) {
       let margin = 20;
-      //generate random x and y coordinate between -20 and 532 (532= 512 +40 -20)
-      let randxCoordinate = (Math.floor((Math.random() * (canvas.height + margin * 2)))) - margin;
-      let randyCoordinate = (Math.floor((Math.random() * (canvas.height + margin * 2)))) - margin;
+      let randx =
+        Math.floor(Math.random() * (this.canvas.width + margin * 2)) - margin;
+      let randy =
+        Math.floor(Math.random() * (this.canvas.height + margin * 2)) - margin;
 
-      let whithinbounds = true;
-      //if coordinates are whithin the canvas bounds, generate new coords
-      while (whithinbounds) {
-        if (randxCoordinate > 0 &&
-          randxCoordinate + enemy.size < 0 + canvas.height &&
-          randyCoordinate > 0 &&
-          randyCoordinate + enemy.size < canvas.height) {
-          randxCoordinate = (Math.floor((Math.random() * (canvas.height + margin * 2)))) - margin;
-          randyCoordinate = (Math.floor((Math.random() * (canvas.height + margin * 2)))) - margin;
-        }
-        //if coords are outside the canvas - exit loop and push to enemies list
-        else {
-          whithinbounds = false;
-        }
-      }
-      // console.log('enemy number ' + i + " has spawned" + ' at coordinates ' + randxCoordinate + ',' + randyCoordinate);
-      enemies.push([randxCoordinate, randyCoordinate, enemy.size, enemy.size])
-    }
-    //console.log(enemies);
-
-  }
-
-  function moveEnemiesTowardsPlayer() {
-    // a function that updates the coords of enemies
-    for (let i = 0; i < enemies.length; i++) {
-
-      //enemy center
-      let enemyXCenter = (enemies[i][0]) + enemy.size / 2;
-      let enemyYCenter = (enemies[i][1]) + enemy.size / 2;
-
-
-
-      //find distance between enemy and player
-      //console.log('enemy ' + i + 'has the following X,Y values: '+ Math.floor(enemies[i][0]) + ',' + Math.floor(enemies[i][1]));
-      //console.log('enemy ' + i + 'has the following center coords: '+ Math.floor(enemyXCenter)+','+Math.floor(enemyYCenter));
-
-
-
-      //center of player
-      let centerOfPlayerX = player.x + (player.size / 2)
-      let centerOfPlayerY = player.y + (player.size / 2)
-
-
-
-      //distance
-      let dx = centerOfPlayerX - enemyXCenter;
-      let dy = centerOfPlayerY - enemyYCenter;
-      let distance = Math.sqrt((dx ** 2) + (dy ** 2))
-      //console.log('distance: '+distance);
-
-
-      //normalize direction towards player (give appropriate x and y change)
-      //dividing by zero bad, very bad
-      if (distance > 0) {
-        let newEnemyX = dx / distance;
-        let newEnemyY = dy / distance;
-
-        enemies[i][0] = enemies[i][0] + (newEnemyX * enemy.speed);
-        enemies[i][1] = enemies[i][1] + (newEnemyY * enemy.speed);
+      // keep enemies outside canvas
+      while (
+        randx > 0 &&
+        randx + this.enemy.size < this.canvas.width &&
+        randy > 0 &&
+        randy + this.enemy.size < this.canvas.height
+      ) {
+        randx =
+          Math.floor(Math.random() * (this.canvas.width + margin * 2)) - margin;
+        randy =
+          Math.floor(Math.random() * (this.canvas.height + margin * 2)) - margin;
       }
 
+      this.enemies.push([randx, randy, this.enemy.size, this.enemy.size]);
     }
   }
 
-  function draw() {
-    request_id = requestAnimationFrame(draw);
-    //console.log('rr3')
-    now = Date.now();
-    let elapsed = now - then;
-    if (elapsed > fpsInterval) {
-      then = now - (elapsed % fpsInterval);
-    }
-    context.fillStyle = "red";
-    context.fillRect(0, 0, canvas.width, canvas.height);
+  moveEnemiesTowardsPlayer() {
+    for (let i = 0; i < this.enemies.length; i++) {
+      let ex = this.enemies[i][0] + this.enemy.size / 2;
+      let ey = this.enemies[i][1] + this.enemy.size / 2;
 
+      let px = this.player.x + this.player.size / 2;
+      let py = this.player.y + this.player.size / 2;
 
-    //draw player(yellow brick for now)
-    context.fillStyle = player.color;
-    context.fillRect(player.x, player.y, player.size, player.size);
+      let dx = px - ex;
+      let dy = py - ey;
+      let dist = Math.sqrt(dx * dx + dy * dy);
 
-    //player movement (horizontal and vertical)
-
-    if (moveRight === true && player.x + player.size < canvas.width) {
-      player.x = player.x + player.xChange;
-    }
-    if (moveLeft === true && player.x > canvas.width - canvas.width) {
-      player.x = player.x - player.xChange;
-    }
-    if (moveDown === true && player.y + player.size < canvas.height) {
-      player.y = player.y + player.yChange;
-    }
-    if (moveUp === true && player.y > canvas.height - canvas.height) {
-      player.y = player.y - player.yChange;
-    }
-
-
-    //keeps track of current last wasd input
-    document.getElementById('wasd').innerHTML = bulletDirection;
-
-
-    //draw enemies
-    context.fillStyle = enemy.color;
-    for (let i = 0; i < enemies.length; i++) {
-      context.fillRect(enemies[i][0], enemies[i][1], enemies[i][2], enemies[i][3]);
-    }
-    moveEnemiesTowardsPlayer();
-
-    //draw bullets
-    shoot()
-
-
-    //i think this helps the screen refresh but we'll have to see
-    //context.clearRect(0, 0, canvas.width, canvas.height);
-
-  }
-
-  function shoot() {
-    /*
-    projectile kills enemy if they collide.
-    player has a limited fire rate (no death beams)
-    */
-
-
-    let shotFired;
-    let delta = 1500; //1.5 secs between shots (semi auto style)
-
-
-    if (spaceBarPressed === true) {
-      shotFired = Date.now() //time that spacebar is pressed
-
-      if (fired === true && (shotFired - lastShotFired) <= delta) {
-        console.log('not enough time!')
-        return
+      if (dist > 0) {
+        let nx = dx / dist;
+        let ny = dy / dist;
+        this.enemies[i][0] += nx * this.enemy.speed;
+        this.enemies[i][1] += ny * this.enemy.speed;
       }
-    
-
-
-    fired = true
-    lastShotFired = Date.now()//time shot was fired
-    //console.log('now: ' + now + ' then: ' + lastShotFired + ' diff: ' + (now - lastShotFired) / 1000 + 'seconds');
-    bullets.push([(player.x + player.size / 2), (player.y + player.size / 2), bulletDirection]);
+    }
   }
-  context.fillStyle = bullet.color;
-  for (let i = 0; i < bullets.length; i++) {
 
-
-    let bX = bullets[i][0];
-    let bY = bullets[i][1];
-    let bDirection = bullets[i][2];
-
-    //draw bullets
-    context.fillRect(bX, bY, bullet.size, bullet.size);
-
-
-    //move bullets
-
-
-    //up
-    if (bDirection === 'w') {
-      bullets[i][0] = bX
-      bullets[i][1] -= bullet.yChange
+  shoot() {
+    if (this.spaceBarPressed) {
+      this.bullets.push([
+        this.player.x + this.player.size / 2,
+        this.player.y + this.player.size / 2,
+        this.bulletDirection,
+      ]);
+      this.spaceBarPressed = false; // fire once per press
     }
 
-    //left
-    else if (bDirection === 'a') {
-      bullets[i][0] = bX - bullet.xChange;
-      bullets[i][1] = bY;
+    this.context.fillStyle = "green";
+    for (let i = 0; i < this.bullets.length; i++) {
+      let [bx, by, dir] = this.bullets[i];
+      this.context.fillRect(bx, by, 5, 5);
+
+      if (dir === "w") this.bullets[i][1] -= 5;
+      else if (dir === "a") this.bullets[i][0] -= 5;
+      else if (dir === "s") this.bullets[i][1] += 5;
+      else if (dir === "d") this.bullets[i][0] += 5;
+
+      // remove offscreen bullets
+      if (
+        bx < 0 ||
+        by < 0 ||
+        bx > this.canvas.width ||
+        by > this.canvas.height
+      ) {
+        this.bullets.splice(i, 1);
+        i--;//arrays collapse after you splice, as such i++ would skip over the next item in the array. i-- prevents this.
+      }
     }
-
-    //down
-    else if (bDirection === 's') {
-      bullets[i][0] = bX;
-      bullets[i][1] = bY + bullet.yChange;
-    }
-
-    //right
-    else if (bDirection === 'd') {
-      bullets[i][0] = bX + bullet.xChange;
-      bullets[i][1] = bY;
-    }
-    //bullet travelss up by default/in case unexpected thing happens
-    else {
-      bullets[i][0] = bX + bullet.xChange;
-      bullets[i][1] = bY + bullet.yChange;
-    }
-
-
-
-
-    //remove bullet from list if it has reached canvas boundary
-    if (bX >= (canvas.width) ||
-      bY >= (canvas.height) ||
-      bX < (canvas.width - canvas.width) ||
-      bY < (canvas.height - canvas.height)) {
-      //console.log('OOB')
-      bullets.splice(i, 1);
-    }
-
-
   }
-  //console.log('numBullets= ' + bullets.length);
 
+  stop() {
+    cancelAnimationFrame(this.requestId);
+    window.removeEventListener("keydown", this.activate);
+    window.removeEventListener("keyup", this.deactivate);
+  }
 }
 
-function checkCollisions() {
-  //todo
-}
 
-function pauseGame() {
-  cancelAnimationFrame(request_id);
-  console.log('game paused');
-};
-document.getElementById('pause').addEventListener('click', pauseGame, false);
-}
-
-//RatRaceII
-function ratRaceII() {
-
-  console.log(currentGame);
-    //console.log('RatRaceII called but RatRaceShooter is running')
-  console.log('you have succesfully started RatRaceII')
-  document.getElementById("gameTitle").innerHTML="Rat Race II";
-  let level = 1;
-  let fpsInterval = 1000 / 30;
-  let map;
-  let tileImage = new Image();
-  let playerImage = new Image();
-  playerImage.src = 'cheese.png';
-  tileImage.src = "WallTileNormal.png";
-  let timerInterval = null;
-  let player = {
-    x: 0,
-    y: 150,
-    size: 30,
-    xChange: 10,
-    yChange: 10,
-    color: "yellow",
-  };
-  let enemies = [];
-  let enemyImage = new Image();
-  enemyImage.src = "ratEnemy.png";
-  let exit = {
-    x: 448, //512-64
-    y: 0,
-    size: 64,
-    color: "green"
-
-  }
-
-  let moveLeft = false;
-  let moveUp = false;
-  let moveDown = false;
-  let moveRight = false;
-
-
-  function init() {
-    console.log('init function has been called!');
-    window.addEventListener("keydown", activate, false);
-    window.addEventListener("keyup", deactivate, false);
-    positionPlayerBottomLeft();
-    draw();
-    spawnEnemies(3);
-    level = 1;
-    document.getElementById("level").innerHTML = 'Level: ' + level;
-    displayPlayerTime()
-    startTimer()
-  }
-  init();
-  var startTime;
-  var endTime;
-  var timeDiff;
-  function startTimer() {
-    startTime = new Date();
-  };
-  function recordTime() {
-    endTime = new Date();
-    timeDiff = (endTime - startTime) / 1000;
+class RatRaceII {
+  constructor() {
+    this.level = 1;
+    this.fpsInterval = 1000 / 30;
+    this.map;
+    this.tileImage = new Image();
+    this.tileImage.src = 'WallTileNormal.png';
+    this.playerImage = new Image();
+    this.playerImage.src = 'cheese.png';
+    this.timerInterval = null;
+    this.player = null
+    this.enemies = [];
+    this.enemyImage = new Image();
+    this.enemyImage.src = 'ratEnemy.png';
+    this.exit = null;
+    this.moveLeft = false;
+    this.moveRight = false;
+    this.moveDown = false;
+    this.moveUp = false;
+    this.startTime=null;
+    this.endTime=null;
+    this.timeDiff=null;
   };
 
+  startTimer(){
+    this.startTime=new Date();
+  };
+  recordTime(){
+    this.endTime=new Date();
+    this.timeDiff=(this.endTime-this.startTime)/1000;
+  };
 
-
-  function displayPlayerTime() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
+  displayPlayerTime(){
+    if(this.timerInterval){
+      clearInterval(this.timerInterval);
     };
     const start = Date.now();
-    timerInterval = setInterval(keepTime, 1000);
+    this.timerInterval=setInterval(keepTime,1000);
     function keepTime() {
       let timeTaken = Date.now() - start;
       document.getElementById("playerTime").innerHTML = 'time: ' + Math.floor(timeTaken / 1000) + ' seconds';
     }
   }
 
+  start(ctx, canvas) {
+    this.context = ctx;
+    this.canvas = canvas;
+    this.loop = this.loop.bind(this);
+    this.requestId = requestAnimationFrame(this.loop);
+    document.getElementById("level").innerHTML = 'Level: ' + this.level;
 
-  function positionPlayerBottomLeft() {
-    player.x = 0;
-    player.y = canvas.height - player.size;
+    this.player = {
+      x: 0,
+      y: 150,
+      size: 30,
+      xChange: 10,
+      yChange: 10,
+      color: "yellow",
+    };
+    this.exit = {
+      x: 448, //512-64
+      y: 0,
+      size: 64,
+      color: "green"
+    };
+
+
+
+    this.activate = this.activate.bind(this); //this will always mean ratraceII in the activate function
+    this.deactivate = this.deactivate.bind(this);
+    window.addEventListener('keydown', this.activate, false);
+    window.addEventListener('keyup', this.deactivate, false);
+    this.positionPlayerBottomLeft();
+    this.spawnEnemies(3);
+    this.displayPlayerTime();
+    this.startTimer();
+
+
   }
 
-  function draw() {
-    //console.log('RR2 running...')
-    console.log(currentGame);
-    request_id = window.requestAnimationFrame(draw);
-    let now = Date.now();
-    let elapsed = now - then;
-    if (elapsed <= fpsInterval) {
-      return;
+  loop() {
+    this.requestId = requestAnimationFrame(this.loop);
+    //checks for ghosting
+    const now = Date.now();
+    const elapsed = now - this.then;
+    if (elapsed < this.fpsInterval) return;
+    this.then = now;
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    //draw map
+    if (this.level === 1) {
+      this.drawLevel(1)
     }
-    then = now - (elapsed % fpsInterval);
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    if (level === 1) {
-      drawLevel(1)
+    else if (this.level === 2) {
+      this.drawLevel(2)
     }
-    else if (level === 2) {
-      drawLevel(2)
+    else if (this.level === 3) {
+      this.drawLevel(3)
     }
-    else if (level === 3) {
-      drawLevel(3)
+    else if (this.level === 4) {
+      this.drawLevel(4)
     }
-    else if (level === 4) {
-      drawLevel(4)
-    }
-    else if (level === 5) {
-      drawLevel(5)
+    else if (this.level === 5) {
+      this.drawLevel(5)
     }
     else {
-      endGame()
+      this.endGame()
     }
-    //Draw player
-    context.fillStyle = "yellow"
-    context.drawImage(playerImage, player.x, player.y, player.size, player.size);
-    context.fillStyle = "red"
+
+    //draw player
+    this.context.drawImage(
+      this.playerImage,
+      this.player.x,
+      this.player.y,
+      this.player.size,
+      this.player.size);
 
     //player movement
-    if (moveRight && player.x + player.size < canvas.width) {
-      player.x = player.x + player.xChange;
+    if (this.moveRight && this.player.x + this.player.size < this.canvas.width) {
+      this.player.x += this.player.xChange;
     }
-    if (moveUp && player.y > 0) {
-      player.y = player.y - player.yChange;
+    if (this.moveLeft && this.player.x > 0) {
+      this.player.x -= this.player.xChange;
     }
-    if (moveDown && player.y + player.size < canvas.height) {
-      player.y = player.y + player.yChange;
+    if (this.moveUp && this.player.y > 0) {
+      this.player.y -= this.player.yChange;
     }
-    if (moveLeft && player.x > 0) {
-      player.x = player.x - player.xChange;
+    if (this.moveDown && this.player.y + this.player.size < canvas.height) {
+      this.player.y += this.player.yChange;
     }
-    //enemies
-    for (let e of enemies) {
+
+     //enemies
+    for (let e of this.enemies) {
       // Calculate direction towards player
-      let dx = player.x - e.x;
-      let dy = player.y - e.y;
+      let dx = this.player.x - e.x;
+      let dy = this.player.y - e.y;
       let distance = Math.sqrt(dx * dx + dy * dy);
       // distance calculated as you'd expect -> square root of (x2-x1)^2 + (y2-y1)^2
 
@@ -510,254 +383,77 @@ function ratRaceII() {
         e.y += (dy / distance) * e.speed; // same for dy, e.speed will increase for every level adding to the difficulty
       }
       //draw enemies as frames refresh
-      context.drawImage(e.img, e.x, e.y, e.size, e.size);
+      this.context.drawImage(this.enemyImage, e.x, e.y, e.size, e.size);
 
-      if (distance < player.size / 2 + e.size / 2) { //if the distance between the player and the enemy is less than (half the enemy's width + half the player's width) they are overlapping
-        gameOver();
+      if (distance < this.player.size / 2 + e.size / 2) { //if the distance between the player and the enemy is less than (half the enemy's width + half the player's width) they are overlapping
+        this.gameOver();
         return;
       }
     }
 
-    checkCollisions();
+    this.checkCollisions();
+
   }
 
-
-
-  function gameOver() {
-    recordTime();
-    cancelAnimationFrame(request_id);
-    context.font = "bold 50px Arial";
-    context.fillStyle = "black";
-    context.textAlign = "center";
-    context.fillText("Game Over", canvas.width / 2, canvas.height / 2);
-    context.font = "bold 30px Arial";
-    context.fillText("Your Time: " + timeDiff + ' seconds', canvas.width / 2, canvas.height / 2 + 100);
-    context.font = "bold 15px Arial";
-    context.fillText("Click anywhere to start again", canvas.width / 2, canvas.height / 2 + 200);
-    canvas.addEventListener("click", ratRaceII, { once: true });
-    if (timerInterval) {
-      clearInterval(timerInterval);
-    };
-  }
-
-
-  function endGame() {
-    cancelAnimationFrame(request_id);
-    recordTime();
-    context.font = "bold 50px Arial";
-    context.fillStyle = "black";
-    context.textAlign = "center";
-    context.fillText("Congratulations!", canvas.width / 2, canvas.height / 2);
-    context.font = "bold 30px Arial";
-    context.fillText("You finished all levels in " + timeDiff + " seconds!", canvas.width / 2, canvas.height / 2 + 100);
-    context.font = "bold 15px Arial";
-    context.fillText("Click the canvas to play again", canvas.width / 2, canvas.height / 2 + 200);
-    canvas.addEventListener("click", init, { once: true });
-    if (timerInterval) {
-      clearInterval(timerInterval);
-    };
-  }
-
-  function drawLevel(number) {
-    if (number === 1) {
-      //draw tiles (level 1)
-      map = {
-        cols: 8,
-        rows: 8,
-        tsize: 64,
-        tiles: [
-          1, 1, 1, 1, 1, 1, 0, 0,
-          1, 0, 0, 0, 0, 0, 0, 1,
-          1, 0, 1, 0, 1, 1, 0, 1,
-          1, 0, 1, 0, 1, 1, 0, 1,
-          1, 0, 1, 0, 0, 0, 0, 1,
-          1, 0, 0, 0, 1, 1, 1, 1,
-          1, 0, 1, 1, 1, 1, 1, 1,
-          0, 0, 1, 1, 1, 1, 1, 1
-        ],
-        getTile(col, row) {
-          return map.tiles[row * map.cols + col];
-        }
-      };
-    }
-    else if (number === 2) {
-      //draw tiles (level 2)
-      map = {
-        cols: 8,
-        rows: 8,
-        tsize: 64,
-        tiles: [
-          1, 1, 1, 1, 1, 1, 0, 0,
-          1, 0, 0, 0, 0, 0, 0, 1,
-          1, 0, 1, 1, 1, 1, 0, 1,
-          1, 0, 1, 1, 1, 1, 0, 1,
-          1, 0, 0, 0, 0, 0, 0, 1,
-          1, 1, 1, 1, 1, 1, 0, 1,
-          1, 0, 0, 0, 0, 0, 0, 1,
-          0, 0, 1, 1, 1, 1, 1, 1
-        ],
-        getTile(col, row) {
-          return map.tiles[row * map.cols + col];
-        }
-      };
-    }
-    else if (number === 3) {
-      // Level 3 - narrow winding path
-      map = {
-        cols: 8,
-        rows: 8,
-        tsize: 64,
-        tiles: [
-          1, 1, 1, 1, 1, 0, 0, 0,
-          1, 0, 0, 0, 0, 0, 1, 1,
-          1, 0, 1, 0, 0, 0, 0, 1,
-          1, 0, 1, 0, 0, 0, 1, 1,
-          1, 0, 1, 1, 1, 0, 0, 1,
-          1, 0, 0, 0, 1, 1, 0, 1,
-          1, 1, 1, 0, 0, 0, 0, 1,
-          0, 0, 0, 0, 1, 1, 1, 1
-        ],
-        getTile(col, row) {
-          return map.tiles[row * map.cols + col];
-        }
-      };
-    }
-    else if (number === 4) {
-      // Level 4 - multiple small chambers
-      map = {
-        cols: 8,
-        rows: 8,
-        tsize: 64,
-        tiles: [
-          1, 1, 1, 1, 1, 1, 0, 0,
-          1, 0, 0, 1, 0, 0, 0, 1,
-          1, 0, 0, 1, 0, 1, 0, 1,
-          1, 0, 0, 0, 0, 1, 0, 1,
-          1, 1, 0, 1, 1, 1, 0, 1,
-          1, 0, 0, 0, 0, 0, 0, 1,
-          1, 0, 1, 1, 1, 1, 1, 1,
-          0, 0, 1, 1, 1, 1, 1, 1
-        ],
-        getTile(col, row) {
-          return map.tiles[row * map.cols + col];
-        }
-      };
-    }
-    else if (number === 5) {
-      // Level 5 - long looping route
-      map = {
-        cols: 8,
-        rows: 8,
-        tsize: 64,
-        tiles: [
-          1, 1, 1, 1, 0, 0, 0, 0,
-          1, 0, 0, 1, 0, 1, 0, 1,
-          1, 0, 1, 1, 0, 0, 0, 1,
-          1, 0, 1, 0, 0, 1, 0, 1,
-          1, 0, 1, 0, 1, 1, 0, 1,
-          1, 0, 0, 0, 1, 0, 0, 1,
-          1, 1, 1, 0, 1, 0, 1, 1,
-          0, 0, 0, 0, 1, 0, 1, 1
-        ],
-        getTile(col, row) {
-          return map.tiles[row * map.cols + col];
-        }
-      };
-    }
-    //draw exit
-    context.fillStyle = "green";
-    context.fillRect(exit.x, exit.y, exit.size, exit.size);
-
-    context.fillStyle = "red";
-    for (let c = 0; c < map.cols; c++) {
-      for (let r = 0; r < map.rows; r++) {
-        let tile = map.getTile(c, r);
-        if (tile === 1) {
-          context.drawImage(
-            tileImage,
-            c * map.tsize,  // x
-            r * map.tsize,  // y
-            map.tsize,      // width
-            map.tsize       // height
-          );
-        }
-      }
+  gameOver(){
+    
+    this.recordTime();
+    cancelAnimationFrame(this.requestId);
+    this.context.font = "bold 50px Arial";
+    this.context.fillStyle = "black";
+    this.context.textAlign = "center";
+    this.context.fillText("Game Over", this.canvas.width / 2, this.canvas.height / 2);
+    this.context.font = "bold 15px Arial";
+    this.context.fillText("Your Time: " + this.timeDiff + ' seconds', this.canvas.width / 2, this.canvas.height / 2 + 100);
+    this.context.font = "bold 15px Arial";
+    this.context.fillText("Click anywhere to start again", this.canvas.width / 2, this.canvas.height / 2 + 200);
+    //this.canvas.addEventListener("click", ratRaceII, { once: true });
+    if (this.timerInterval) {
+     clearInterval(this.timerInterval);
     }
   }
 
-  function checkCollisions() {
-    //exit collisions
-    if (
-      player.x < exit.x + exit.size &&
-      player.x + player.size > exit.x &&
-      player.y < exit.y + exit.size &&
-      player.y + player.size > exit.y
-    ) {
-      level += 1;
-      document.getElementById("level").innerHTML = 'Level: ' + level;
-      positionPlayerBottomLeft();
-      spawnEnemies(3);
-    }
-
-    // wall collisions
-    for (let c = 0; c < map.cols; c++) {
-      for (let r = 0; r < map.rows; r++) {
-        let tile = map.getTile(c, r);
-        if (tile === 1) {
-          let tileX = c * map.tsize;
-          let tileY = r * map.tsize;
-          if (
-            player.x + player.size > tileX && //if players right is whithin tiles left
-            player.x < tileX + map.tsize &&//if players left whithin tiles right
-            player.y + player.size > tileY && // if bot of player is below the top of tile
-            player.y < tileY + map.tsize //if top of player is above the bot of tile
-          ) {
-            positionPlayerBottomLeft(); // a collision has occured, should any one of our if conditions fail, no collision has occured
-          }
-        }
-      }
-    }
-  }
-
-  function activate(event) {
-    let key = event.key;
-    if (event.key === "ArrowLeft" ||
-      event.key === "ArrowRight" ||
-      event.key === "ArrowUp" ||
-      event.key === "ArrowDown") {
+  activate(event) {
+    const key = event.key;
+    if (key === "ArrowLeft" ||
+      key === "ArrowRight" ||
+      key === "ArrowUp" ||
+      key === "ArrowDown") {
       event.preventDefault();
     }
     if (key === "ArrowLeft") {
-      moveLeft = true;
+      this.moveLeft = true;
     } else if (key === "ArrowUp") {
-      moveUp = true;
+      this.moveUp = true;
     } else if (key === "ArrowDown") {
-      moveDown = true;
+      this.moveDown = true;
     } else if (key === "ArrowRight") {
-      moveRight = true;
+      this.moveRight = true;
     }
 
   }
-  function deactivate(event) {
-    let key = event.key;
+
+
+  deactivate(event) {
+    const key = event.key;
     if (key === "ArrowLeft") {
-      moveLeft = false;
+      this.moveLeft = false;
     } else if (key === "ArrowUp") {
-      moveUp = false;
+      this.moveUp = false;
     } else if (key === "ArrowDown") {
-      moveDown = false;
+      this.moveDown = false;
     } else if (key === "ArrowRight") {
-      moveRight = false;
+      this.moveRight = false;
     }
   }
 
 
-  function spawnEnemies(num) {
-    enemies = [];
+spawnEnemies(num){
+    this.enemies = [];
     //creates a safe zone in the bottom left that enemies wont spawn in using isSafe (see below) 
     let safeZone = {
       x: 0,
-      y: canvas.height - 200,
+      y: this.canvas.height - 200,
       width: 200,
       height: 200
     };
@@ -779,8 +475,8 @@ function ratRaceII() {
       */
 
       while (!isSafe) {
-        ex = Math.random() * (canvas.width - 40); //-40 such that the full enemy fits in the canvas
-        ey = Math.random() * (canvas.height - 40);
+        ex = Math.random() * (this.canvas.width - 40); //-40 such that the full enemy fits in the canvas
+        ey = Math.random() * (this.canvas.height - 40);
 
         //if enemy square and safe Zone do NOT overlap
         if (
@@ -793,22 +489,219 @@ function ratRaceII() {
         }
       }
 
-      enemies.push({
+      this.enemies.push({
         x: ex,
         y: ey,
         size: 40,
         speed: 1, //add if you want faster enemies + level * 0.2,
-        img: enemyImage
+        img: this.enemyImage
       });
     }
   }
+ checkCollisions(){
+    //exit collisions
+    if (
+      this.player.x < this.exit.x + this.exit.size &&
+      this.player.x + this.player.size > this.exit.x &&
+      this.player.y < this.exit.y + this.exit.size &&
+      this.player.y + this.player.size > this.exit.y
+    ) {
+      this.level += 1;
+      document.getElementById("level").innerHTML = 'Level: ' + this.level;
+      this.positionPlayerBottomLeft();
+      this.spawnEnemies(3);
+    }
 
-  function resetGame() {
-    level = 1;
-    document.getElementById("level").innerHTML = 'Level: ' + level;
-    startTimer();
-    positionPlayerBottomLeft();
-    level = 1;
-    spawnEnemies(3);
+    // wall collisions
+    for (let c = 0; c < this.map.cols; c++) {
+      for (let r = 0; r < this.map.rows; r++) {
+        let tile = this.map.getTile(c, r);
+        if (tile === 1) {
+          let tileX = c * this.map.tsize;
+          let tileY = r * this.map.tsize;
+          if (
+            this.player.x + this.player.size > tileX && //if this.players right is whithin tiles left
+            this.player.x < tileX + this.map.tsize &&//if this.players left whithin tiles right
+            this.player.y + this.player.size > tileY && // if bot of this.player is below the top of tile
+            this.player.y < tileY + this.map.tsize //if top of this.player is above the bot of tile
+          ) {
+            this.positionPlayerBottomLeft(); // a collision has occured, should any one of our if conditions fail, no collision has occured
+          }
+        }
+      }
+    }
+  }
+
+  endGame(){
+    cancelAnimationFrame(this.requestId);
+    this.recordTime();
+    this.context.font = "bold 50px Arial";
+    this.context.fillStyle = "black";
+    this.context.textAlign = "center";
+    this.context.fillText("Congratulations!", this.canvas.width / 2, this.canvas.height / 2);
+    this.context.font = "bold 30px Arial";
+    this.context.fillText("You finished all levels in " + this.timeDiff + " seconds!", this.canvas.width / 2, this.canvas.height / 2 + 100);
+    this.context.font = "bold 15px Arial";
+    this.context.fillText("Click the canvas to play again", this.canvas.width / 2, this.canvas.height / 2 + 200);
+    //document.getElementById("canvas").addEventListener("click", () => manager.start(race));;
+    if (this.timerInterval) {
+     clearInterval(this.timerInterval);
+    };
+  }
+  drawLevel(number) {
+    if (number === 1) {
+      //draw tiles (level 1)
+      this.map = {
+        cols: 8,
+        rows: 8,
+        tsize: 64,
+        tiles: [
+          1, 1, 1, 1, 1, 1, 0, 0,
+          1, 0, 0, 0, 0, 0, 0, 1,
+          1, 0, 1, 0, 1, 1, 0, 1,
+          1, 0, 1, 0, 1, 1, 0, 1,
+          1, 0, 1, 0, 0, 0, 0, 1,
+          1, 0, 0, 0, 1, 1, 1, 1,
+          1, 0, 1, 1, 1, 1, 1, 1,
+          0, 0, 1, 1, 1, 1, 1, 1
+        ],
+        getTile(col, row) {
+          return this.tiles[row * this.cols + col];
+        }
+      };
+    }
+    else if (number === 2) {
+      //draw tiles (level 2)
+      this.map = {
+        cols: 8,
+        rows: 8,
+        tsize: 64,
+        tiles: [
+          1, 1, 1, 1, 1, 1, 0, 0,
+          1, 0, 0, 0, 0, 0, 0, 1,
+          1, 0, 1, 1, 1, 1, 0, 1,
+          1, 0, 1, 1, 1, 1, 0, 1,
+          1, 0, 0, 0, 0, 0, 0, 1,
+          1, 1, 1, 1, 1, 1, 0, 1,
+          1, 0, 0, 0, 0, 0, 0, 1,
+          0, 0, 1, 1, 1, 1, 1, 1
+        ],
+        getTile(col, row) {
+          return this.tiles[row * this.cols + col];
+        }
+      };
+    }
+    else if (number === 3) {
+      // Level 3 - narrow winding path
+      this.map = {
+        cols: 8,
+        rows: 8,
+        tsize: 64,
+        tiles: [
+          1, 1, 1, 1, 1, 0, 0, 0,
+          1, 0, 0, 0, 0, 0, 1, 1,
+          1, 0, 1, 0, 0, 0, 0, 1,
+          1, 0, 1, 0, 0, 0, 1, 1,
+          1, 0, 1, 1, 1, 0, 0, 1,
+          1, 0, 0, 0, 1, 1, 0, 1,
+          1, 1, 1, 0, 0, 0, 0, 1,
+          0, 0, 0, 0, 1, 1, 1, 1
+        ],
+        getTile(col, row) {
+          return this.tiles[row * this.cols + col];
+        }
+      };
+    }
+    else if (number === 4) {
+      // Level 4 - multiple small chambers
+      this.map = {
+        cols: 8,
+        rows: 8,
+        tsize: 64,
+        tiles: [
+          1, 1, 1, 1, 1, 1, 0, 0,
+          1, 0, 0, 1, 0, 0, 0, 1,
+          1, 0, 0, 1, 0, 1, 0, 1,
+          1, 0, 0, 0, 0, 1, 0, 1,
+          1, 1, 0, 1, 1, 1, 0, 1,
+          1, 0, 0, 0, 0, 0, 0, 1,
+          1, 0, 1, 1, 1, 1, 1, 1,
+          0, 0, 1, 1, 1, 1, 1, 1
+        ],
+        getTile(col, row) {
+          return this.tiles[row * this.cols + col];
+        }
+      };
+    }
+    else if (number === 5) {
+      // Level 5 - long looping route
+      this.map = {
+        cols: 8,
+        rows: 8,
+        tsize: 64,
+        tiles: [
+          1, 1, 1, 1, 0, 0, 0, 0,
+          1, 0, 0, 1, 0, 1, 0, 1,
+          1, 0, 1, 1, 0, 0, 0, 1,
+          1, 0, 1, 0, 0, 1, 0, 1,
+          1, 0, 1, 0, 1, 1, 0, 1,
+          1, 0, 0, 0, 1, 0, 0, 1,
+          1, 1, 1, 0, 1, 0, 1, 1,
+          0, 0, 0, 0, 1, 0, 1, 1
+        ],
+        getTile(col, row) {
+          return this.tiles[row * this.cols + col];
+        }
+      };
+    }
+    //draw exit
+    this.context.fillStyle = "green";
+    this.context.fillRect(this.exit.x, this.exit.y, this.exit.size, this.exit.size);
+
+    this.context.fillStyle = "red";
+    for (let c = 0; c < this.map.cols; c++) {
+      for (let r = 0; r < this.map.rows; r++) {
+        let tile = this.map.getTile(c, r);
+        if (tile === 1) {
+          this.context.drawImage(
+            this.tileImage,
+            c * this.map.tsize,  // x
+            r * this.map.tsize,  // y
+            this.map.tsize,      // width
+            this.map.tsize       // height
+          );
+        }
+      }
+    }
+  }
+
+
+
+
+  positionPlayerBottomLeft() {
+    this.player.x = 0;
+    this.player.y = this.canvas.height - this.player.size;
+  }
+  stop() {
+    cancelAnimationFrame(this.requestId);
   }
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  const manager = new GameManager("canvas");
+
+  const shooter = new RatShooterIII();
+  const race = new RatRaceII();
+
+  document.getElementById("ratShooterIII")
+    .addEventListener("click", () => manager.start(shooter));
+
+  document.getElementById("ratRaceII")
+    .addEventListener("click", () => manager.start(race));
+
+  document.getElementById("gameTitle").innerHTML = "Main Menu";
+  manager.context.font = "bold 20px Arial";
+  manager.context.fillStyle = "black";
+  manager.context.textAlign = "center";
+  manager.context.fillText("Welcome", manager.canvas.width / 2, manager.canvas.height / 2);
+});
