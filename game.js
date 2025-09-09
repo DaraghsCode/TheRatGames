@@ -28,7 +28,11 @@ class RatShooterIII {
     this.fpsInterval = 1000 / 30;
     this.then = Date.now();
     this.player = null;
+    this.playerImage = new Image();
+    this.playerImage.src = 'cheese.png';
     this.enemy = null;
+    this.enemyImage = new Image();
+    this.enemyImage.src = 'ratEnemy.png';
     this.bullets = [];
     this.enemies = [];
     this.moveUp = false;
@@ -93,7 +97,8 @@ class RatShooterIII {
 
     // draw player
     this.context.fillStyle = this.player.color;
-    this.context.fillRect(
+    this.context.drawImage(
+      this.playerImage,
       this.player.x,
       this.player.y,
       this.player.size,
@@ -117,7 +122,7 @@ class RatShooterIII {
     // enemies
     this.context.fillStyle = this.enemy.color;
     for (let i = 0; i < this.enemies.length; i++) {
-      this.context.fillRect(this.enemies[i][0], this.enemies[i][1], this.enemies[i][2], this.enemies[i][3])
+      this.context.drawImage(this.enemyImage,this.enemies[i][0], this.enemies[i][1], this.enemies[i][2], this.enemies[i][3])
     }
     /*
     for (let [x, y, w, h] of this.enemies) {
