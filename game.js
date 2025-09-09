@@ -701,6 +701,10 @@ spawnEnemies(num){
     this.player.y = this.canvas.height - this.player.size;
   }
   stop() {
+    if (this.timerInterval){
+      clearInterval(this.timerInterval);
+    }
+    document.getElementById("playerTime").innerHTML="";
     cancelAnimationFrame(this.requestId);
   }
 }
