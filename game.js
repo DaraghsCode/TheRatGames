@@ -40,6 +40,7 @@ class RatShooterIII {
   }
 
   start(context, canvas) {
+    document.getElementById("gameTitle").innerHTML='Rat Shooter III';
     this.context = context;
     this.canvas = canvas;
 
@@ -176,7 +177,9 @@ class RatShooterIII {
       this.enemies.push([randx, randy, this.enemy.size, this.enemy.size]);
     }
   }
-
+  checkCollisions(){
+    //todo
+  }
   moveEnemiesTowardsPlayer() {
     for (let i = 0; i < this.enemies.length; i++) {
       let ex = this.enemies[i][0] + this.enemy.size / 2;
@@ -194,6 +197,9 @@ class RatShooterIII {
         let ny = dy / dist;
         this.enemies[i][0] += nx * this.enemy.speed;
         this.enemies[i][1] += ny * this.enemy.speed;
+      }
+      if (dist <= 25){
+        this.gameOver();
       }
     }
   }
@@ -233,6 +239,11 @@ class RatShooterIII {
   gameOver(){
     document.getElementById("canvas")
     .addEventListener("click", () => this.manager.start(this));
+    cancelAnimationFrame(this.requestId);
+    this.context.font = "bold 50px Arial";
+    this.context.fillStyle = "black";
+    this.context.textAlign = "center";
+    this.context.fillText("Game Over", this.canvas.width / 2, this.canvas.height / 2);
   }
   stop() {
     cancelAnimationFrame(this.requestId);
@@ -288,6 +299,7 @@ class RatRaceII {
   }
 
   start(ctx, canvas) {
+    document.getElementById("gameTitle").innerHTML="Rat Race II";
     this.context = ctx;
     this.canvas = canvas;
     this.loop = this.loop.bind(this);
