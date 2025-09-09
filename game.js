@@ -22,8 +22,9 @@ class GameManager {
 }
 
 class RatShooterIII {
-  constructor() {
+  constructor(manager) {
     // game state variables
+    this.manager=manager;
     this.fpsInterval = 1000 / 30;
     this.then = Date.now();
     this.player = null;
@@ -229,7 +230,10 @@ class RatShooterIII {
       }
     }
   }
-
+  gameOver(){
+    document.getElementById("canvas")
+    .addEventListener("click", () => this.manager.start(this));
+  }
   stop() {
     cancelAnimationFrame(this.requestId);
     window.removeEventListener("keydown", this.activate);
@@ -239,7 +243,8 @@ class RatShooterIII {
 
 
 class RatRaceII {
-  constructor() {
+  constructor(manager) {
+    this.manager=manager
     this.level = 1;
     this.fpsInterval = 1000 / 30;
     this.map;
@@ -407,7 +412,8 @@ class RatRaceII {
     this.context.fillText("Your Time: " + this.timeDiff + ' seconds', this.canvas.width / 2, this.canvas.height / 2 + 100);
     this.context.font = "bold 15px Arial";
     this.context.fillText("Click anywhere to start again", this.canvas.width / 2, this.canvas.height / 2 + 200);
-    //this.canvas.addEventListener("click", ratRaceII, { once: true });
+    document.getElementById("canvas")
+    .addEventListener("click", () => this.manager.start(this));
     if (this.timerInterval) {
      clearInterval(this.timerInterval);
     }
@@ -691,7 +697,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const manager = new GameManager("canvas");
 
   const shooter = new RatShooterIII();
-  const race = new RatRaceII();
+  const race = new RatRaceII(manager);
 
   document.getElementById("ratShooterIII")
     .addEventListener("click", () => manager.start(shooter));
